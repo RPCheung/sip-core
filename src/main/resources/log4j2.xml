@@ -1,0 +1,74 @@
+<Configuration status="off">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{DEFAULT} %-4r [%t] %-5p &lt;%c&gt; - [(%x %M %L)] (%m) %n"/>
+        </Console>
+        <!-- sip appender -->
+        <RollingFile name="DailyRollingFile" fileName="${env:SIP_HOME}/logs/SIP_ALL.log"
+                     filePattern="${env:SIP_HOME}/logs/YTK_ALL.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        </RollingFile>
+        <RollingFile name="msg" fileName="${env:SIP_HOME}/logs/msg/SIP_MSG.log"
+                     filePattern="${env:SIP_HOME}/logs/msg/YTK_MSG.log.%d{yyyy-MM-dd}">
+            <Filters>
+                <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        </RollingFile>
+        <RollingFile name="err" fileName="${env:SIP_HOME}/logs/err/SIP_ERR.log"
+                     filePattern="${env:SIP_HOME}/logs/err/YTK_ERR.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+        </RollingFile>
+        <!-- user appender -->
+        <RollingFile name="user.all" fileName="${env:SIP_HOME}/logs/SIP_USER_ALL.log"
+                     filePattern="${env:SIP_HOME}/logs/msg/YTK_MSG.log.%d{yyyy-MM-dd}">
+            <Filters>
+                <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        </RollingFile>
+        <RollingFile name="userMsg" fileName="${env:SIP_HOME}/logs/msg/SIP_USER_MSG.log"
+                     filePattern="${env:SIP_HOME}/logs/msg/YTK_MSG.log.%d{yyyy-MM-dd}">
+            <Filters>
+                <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        </RollingFile>
+        <RollingFile name="userErr" fileName="${env:SIP_HOME}/logs/err/SIP_USER_ERR.log"
+                     filePattern="${env:SIP_HOME}/logs/msg/YTK_MSG.log.%d{yyyy-MM-dd}">
+            <Filters>
+                <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        </RollingFile>
+    </Appenders>
+<!--  -->
+    <loggers>
+        <!-- ALL LOGGER -->
+        <root level="trace">
+            <appender-ref ref="Console"/>
+            <appender-ref ref="DailyRollingFile"/>
+        </root>
+        <!-- SIP LOGGER -->
+        <logger name="com.rp.sip.SipMsg" level="info" additivity="false">
+            <appender-ref ref="msg"/>
+            <appender-ref ref="err"/>
+        </logger>
+        <!-- USER LOGGER -->
+        <logger name="com.rp.sip.UserMsg" level="info" additivity="false">
+            <appender-ref ref="userMsg"/>
+            <appender-ref ref="userErr"/>
+        </logger>
+    </loggers>
+</Configuration>

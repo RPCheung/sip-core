@@ -2,7 +2,6 @@ package com.rp.sip.packer.impl;
 
 import com.rp.sip.component.MessageObject;
 import com.rp.sip.component.MessageType;
-import com.rp.sip.component.sign.SipMessage;
 import com.rp.sip.db.mapper.SipSettingDAO;
 import com.rp.sip.db.mapper.SipTranDAO;
 import com.rp.sip.message.DefaultMessageObject;
@@ -23,7 +22,7 @@ import java.util.Map;
  * Created by cheungrp on 18/1/10.
  */
 @Component("defaultMessagePacker")
-public class DefaultPackMessage implements PackMessage {
+public class DefaultServerPackMessage implements PackMessage {
 
     private Logger loggerMsg = LogManager.getLogger("com.rp.sip.SipMsg");
     private Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass());
@@ -54,7 +53,6 @@ public class DefaultPackMessage implements PackMessage {
     @Override
     public ByteBuf packMessage(MessageObject response, MessageType messageType, String txCode) {
         DefaultMessageObject messageObject = (DefaultMessageObject) response;
-        SipMessage message = messageObject.getSipMessagePojo();
-        return Unpooled.copiedBuffer(MsgUtils.UTILS.packMessage(message));
+        return Unpooled.copiedBuffer(MsgUtils.UTILS.packMessage(messageObject.getSipMessagePojo()));
     }
 }

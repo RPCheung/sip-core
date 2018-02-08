@@ -4,7 +4,10 @@ package com.rp.sip.utils;
 import com.alibaba.fastjson.JSONArray;
 import com.rp.sip.classloader.SipUserClassloader;
 import com.rp.sip.db.mapper.CustomDbDAO;
+import com.rp.sip.db.mapper.SipSettingDAO;
+import com.rp.sip.db.mapper.SipTranDAO;
 import com.rp.sip.handlers.BusinessDispatcherHandler;
+import com.rp.sip.route.SipRouteClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -77,6 +80,9 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
 
             // init sip custom component
             initCustomComponent();
+
+            // init sip route
+           initRouteAllComponent();
         }
     }
 
@@ -86,6 +92,25 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
         initFindTxCodeHandler();
         initTransactionMappingHandler();
         initPackMessage();
+        initRouteReceiveMessageHandler();
+    }
+
+    private void initRouteAllComponent(){
+        initRoute();
+    }
+
+    private void initRoute() {
+        try {
+            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS
+                    .addSpringBeanDefinition(ClassLoadUtils.utils
+                            .getSipUserClassloader().loadClass("com.rp.sip.route.SipRouteClient"));
+            SpringBeanUtils.UTILS.registerSpringBeanDefinition(builder, "sipRouteClient");
+            SipRouteClient client = SpringBeanUtils.UTILS.getSpringBeanByType(SipRouteClient.class);
+            client.init();
+        } catch (ClassNotFoundException e) {
+            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
+        }
     }
 
     private void loadAllUserJar() {
@@ -119,7 +144,9 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;
             }
-            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS.addSpringBeanDefinitionFromUserClassLoader(messageInterceptor);
+            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS
+                    .addSpringBeanDefinition(ClassLoadUtils.utils
+                            .getSipUserClassloader().loadClass(messageInterceptor));
             SpringBeanUtils.UTILS.registerSpringBeanDefinition(builder, "messageInterceptor");
             Object handler = SpringBeanUtils.UTILS.getSpringBeanById("messageInterceptor");
             if (handler == null) {
@@ -128,7 +155,6 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
             logger.info("配置了 MessageInterceptor :" + handler.getClass().getName());
             loggerMsg.info("配置了 MessageInterceptor :" + handler.getClass().getName());
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
             CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
         }
@@ -142,7 +168,9 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;
             }
-            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS.addSpringBeanDefinitionFromUserClassLoader(messageInterceptor);
+            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS
+                    .addSpringBeanDefinition(ClassLoadUtils.utils
+                            .getSipUserClassloader().loadClass(messageInterceptor));
             SpringBeanUtils.UTILS.registerSpringBeanDefinition(builder, "customBusinessDispatcherHandler");
             Object handler = SpringBeanUtils.UTILS.getSpringBeanById("customBusinessDispatcherHandler");
             if (handler == null) {
@@ -151,8 +179,8 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
             logger.info("配置了 BusinessDispatcherHandler :" + handler.getClass().getName());
             loggerMsg.info("配置了 BusinessDispatcherHandler :" + handler.getClass().getName());
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
         }
     }
 
@@ -164,7 +192,9 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;
             }
-            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS.addSpringBeanDefinitionFromUserClassLoader(messageInterceptor);
+            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS
+                    .addSpringBeanDefinition(ClassLoadUtils.utils
+                            .getSipUserClassloader().loadClass(messageInterceptor));
             SpringBeanUtils.UTILS.registerSpringBeanDefinition(builder, "customFindTxCodeHandler");
             Object handler = SpringBeanUtils.UTILS.getSpringBeanById("customFindTxCodeHandler");
             if (handler == null) {
@@ -173,8 +203,8 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
             logger.info("配置了 FindTxCodeHandler :" + handler.getClass().getName());
             loggerMsg.info("配置了 FindTxCodeHandler :" + handler.getClass().getName());
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
         }
     }
 
@@ -186,7 +216,9 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;
             }
-            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS.addSpringBeanDefinitionFromUserClassLoader(messageInterceptor);
+            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS
+                    .addSpringBeanDefinition(ClassLoadUtils.utils
+                            .getSipUserClassloader().loadClass(messageInterceptor));
             SpringBeanUtils.UTILS.registerSpringBeanDefinition(builder, "customTransactionMappingHandler");
             Object handler = SpringBeanUtils.UTILS.getSpringBeanById("customTransactionMappingHandler");
             if (handler == null) {
@@ -195,8 +227,8 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
             logger.info("配置了 TransactionMappingHandler :" + handler.getClass().getName());
             loggerMsg.info("配置了 TransactionMappingHandler :" + handler.getClass().getName());
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
         }
     }
 
@@ -208,7 +240,9 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;
             }
-            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS.addSpringBeanDefinitionFromUserClassLoader(messageInterceptor);
+            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS
+                    .addSpringBeanDefinition(ClassLoadUtils.utils
+                            .getSipUserClassloader().loadClass(messageInterceptor));
             SpringBeanUtils.UTILS.registerSpringBeanDefinition(builder, "customMessagePacker");
             Object handler = SpringBeanUtils.UTILS.getSpringBeanById("customMessagePacker");
             if (handler == null) {
@@ -217,8 +251,32 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
             logger.info("配置了 PackMessage :" + handler.getClass().getName());
             loggerMsg.info("配置了 PackMessage :" + handler.getClass().getName());
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
+        }
+    }
+
+    private void initRouteReceiveMessageHandler() {
+        try {
+            CustomDbDAO customDbDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomDbDAO.class);
+            Map<String, Object> result = customDbDAO.queryDbCustom();
+            String messageInterceptor = (String) result.get("routeReceiveMessageHandler");
+            if (messageInterceptor == null || messageInterceptor.equals("")) {
+                return;
+            }
+            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS
+                    .addSpringBeanDefinition(ClassLoadUtils.utils
+                            .getSipUserClassloader().loadClass(messageInterceptor));
+            SpringBeanUtils.UTILS.registerSpringBeanDefinition(builder, "routeReceiveMessageHandler");
+            Object handler = SpringBeanUtils.UTILS.getSpringBeanById("routeReceiveMessageHandler");
+            if (handler == null) {
+                throw new RuntimeException("加载 handler 出错!!!");
+            }
+            logger.info("配置了 RouteReceiveMessageHandler :" + handler.getClass().getName());
+            loggerMsg.info("配置了 RouteReceiveMessageHandler :" + handler.getClass().getName());
+        } catch (ClassNotFoundException e) {
+            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
         }
     }
 

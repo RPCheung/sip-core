@@ -1,6 +1,8 @@
 package com.rp.sip.utils;
 
 import com.alibaba.druid.filter.config.ConfigTools;
+import com.alibaba.druid.filter.logging.LogFilter;
+import com.alibaba.druid.filter.logging.Slf4jLogFilter;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.rp.sip.db.mapper.SipSettingDAO;
 import com.rp.sip.db.mapper.UserDbDAO;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -50,7 +53,9 @@ public enum DBUtils {
                 .addPropertyValue("maxWait", queryDbSetting().get("maxWait"))
                 .addPropertyValue("url", queryDbSetting().get("url"))
                 .addPropertyValue("driverClassName", queryDbSetting().get("driverClassName"))
-                .addPropertyValue("testWhileIdle", queryDbSetting().get("testWhileIdle"));
+                .addPropertyValue("testWhileIdle", queryDbSetting().get("testWhileIdle"))
+                .addPropertyReference("proxyFilters", "filters");
+
         ((DefaultListableBeanFactory) SpringBeanFactory.getBeanFactory()).registerBeanDefinition("userDataSource",
                 dataSourceBuilder.getRawBeanDefinition());
 
@@ -95,7 +100,9 @@ public enum DBUtils {
 
     public <T> T getUserSQLMapper(SqlSession session, Class<T> clz) {
         Configuration configuration = session.getConfiguration();
-        configuration.addMapper(clz);
+        if (!configuration.getMapperRegistry().hasMapper(clz)) {
+            configuration.addMapper(clz);
+        }
         T t = session.getMapper(clz);
         return t;
     }

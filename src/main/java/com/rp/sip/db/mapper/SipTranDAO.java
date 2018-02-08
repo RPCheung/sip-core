@@ -11,10 +11,10 @@ import java.util.Map;
  */
 public interface SipTranDAO {
 
-    @Select("select * from tran_data where host=#{host}")
+    @Select("select * from sip_tran_data where host=#{host}")
     List<Map<String, Object>> queryTran(@Param(value = "host") String host);
 
-    @Select("select * from tran_data where host=#{host} and txCode=#{txCode}")
+    @Select("select * from sip_tran_data where host=#{host} and txCode=#{txCode}")
     Map<String, Object> queryTranByTxCode(@Param(value = "host") String host, @Param(value = "txCode") String txCode);
 
 }

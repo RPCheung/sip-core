@@ -1,62 +1,82 @@
-<Configuration status="off">
+<Configuration status="off" schema="Log4J-V2.2.xsd">
+    <Properties>
+        <Property name="logDir">${env:SIP_HOME}/logs</Property>
+    </Properties>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{DEFAULT} %-4r [%t] %-5p &lt;%c&gt; - [(%x %M %L)] (%m) %n"/>
         </Console>
         <!-- sip appender -->
-        <RollingFile name="DailyRollingFile" fileName="${env:SIP_HOME}/logs/SIP_ALL.log"
-                     filePattern="${env:SIP_HOME}/logs/YTK_ALL.log.%d{yyyy-MM-dd}">
-            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+        <RollingFile name="DailyRollingFile" fileName="${logDir}/SIP_ALL.log"
+                     filePattern="${logDir}/SIP_ALL.log.%d{yyyy-MM-dd}">
+            <PatternLayout
+                    pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
             <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
         </RollingFile>
-        <RollingFile name="msg" fileName="${env:SIP_HOME}/logs/msg/SIP_MSG.log"
-                     filePattern="${env:SIP_HOME}/logs/msg/YTK_MSG.log.%d{yyyy-MM-dd}">
+        <RollingFile name="msg" fileName="${logDir}/msg/SIP_MSG.log"
+                     filePattern="${logDir}/msg/SIP_MSG.log.%d{yyyy-MM-dd}">
             <Filters>
                 <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
                 <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
             </Filters>
-            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <PatternLayout
+                    pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
             <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
         </RollingFile>
-        <RollingFile name="err" fileName="${env:SIP_HOME}/logs/err/SIP_ERR.log"
-                     filePattern="${env:SIP_HOME}/logs/err/YTK_ERR.log.%d{yyyy-MM-dd}">
-            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+        <RollingFile name="err" fileName="${logDir}/err/SIP_ERR.log"
+                     filePattern="${logDir}/err/SIP_ERR.log.%d{yyyy-MM-dd}">
+            <PatternLayout
+                    pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
             <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
         </RollingFile>
         <!-- user appender -->
-        <RollingFile name="user.all" fileName="${env:SIP_HOME}/logs/SIP_USER_ALL.log"
-                     filePattern="${env:SIP_HOME}/logs/msg/YTK_MSG.log.%d{yyyy-MM-dd}">
+        <RollingFile name="user.all" fileName="${logDir}/SIP_USER_ALL.log"
+                     filePattern="${logDir}/SIP_USER_ALL.log.%d{yyyy-MM-dd}">
             <Filters>
                 <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
                 <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
             </Filters>
-            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <PatternLayout
+                    pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
             <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
         </RollingFile>
-        <RollingFile name="userMsg" fileName="${env:SIP_HOME}/logs/msg/SIP_USER_MSG.log"
-                     filePattern="${env:SIP_HOME}/logs/msg/YTK_MSG.log.%d{yyyy-MM-dd}">
+        <RollingFile name="userMsg" fileName="${logDir}/msg/SIP_USER_MSG.log"
+                     filePattern="${logDir}/msg/SIP_USER_MSG.log.%d{yyyy-MM-dd}">
             <Filters>
                 <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
                 <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
             </Filters>
-            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <PatternLayout
+                    pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
             <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
         </RollingFile>
-        <RollingFile name="userErr" fileName="${env:SIP_HOME}/logs/err/SIP_USER_ERR.log"
-                     filePattern="${env:SIP_HOME}/logs/msg/YTK_MSG.log.%d{yyyy-MM-dd}">
+        <RollingFile name="userErr" fileName="${logDir}/err/SIP_USER_ERR.log"
+                     filePattern="${logDir}/msg/SIP_USER_ERR.log.%d{yyyy-MM-dd}">
             <Filters>
                 <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
                 <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
             </Filters>
-            <PatternLayout pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <PatternLayout
+                    pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        </RollingFile>
+        <!-- SQL appender -->
+        <RollingFile name="sip.db" fileName="${logDir}/msg/SIP_DB_MSG.log"
+                     filePattern="${logDir}/msg/SIP_DB_MSG.log.%d{yyyy-MM-dd}">
+            <Filters>
+                <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout
+                    pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
             <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
         </RollingFile>
     </Appenders>
-<!--  -->
+    <!--  -->
     <loggers>
         <!-- ALL LOGGER -->
-        <root level="trace">
+        <root level="info">
             <appender-ref ref="Console"/>
             <appender-ref ref="DailyRollingFile"/>
         </root>
@@ -69,6 +89,13 @@
         <logger name="com.rp.sip.UserMsg" level="info" additivity="false">
             <appender-ref ref="userMsg"/>
             <appender-ref ref="userErr"/>
+        </logger>
+        <!-- druid -->
+        <logger name="druid.sql.Statement" level="debug" additivity="false">
+            <appender-ref ref="sip.db"/>
+        </logger>
+        <logger name="druid.sql.ResultSet" level="debug" additivity="false">
+            <appender-ref ref="sip.db"/>
         </logger>
     </loggers>
 </Configuration>

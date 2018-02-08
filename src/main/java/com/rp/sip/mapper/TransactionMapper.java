@@ -5,7 +5,9 @@ import com.rp.sip.handlers.TransactionMappingHandler;
 import com.rp.sip.handlers.impl.DefaultTransactionMappingHandler;
 import com.rp.sip.component.MessageObject;
 
+import com.rp.sip.utils.DBUtils;
 import com.rp.sip.utils.SpringBeanFactory;
+import com.rp.sip.utils.SpringBeanUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 
@@ -32,11 +34,13 @@ public class TransactionMapper extends MessageToMessageDecoder<Map<String, Messa
             handler = (TransactionMappingHandler) SpringBeanFactory.getApplicationContext().getBean("customTransactionMappingHandler");
             handler.setTxCode(txCode);
             ITransaction transaction = handler.mappingTransactionByTxCode(msg);
+            handler.createRouteMessageAndInit();
             if (transaction != null) {
                 transaction.setRequestMessage(msg);
                 transaction.setResponseMessage(handler.createResponseMessage());
                 Map<String, Object> context = new ConcurrentHashMap<>(64);
                 transaction.setTransactionContext(context);
+                transaction.setSqlSessionFactory(DBUtils.UTILS.getUserSqlSessionFactory());
                 out.add(transaction);
             }
             return;
@@ -44,10 +48,12 @@ public class TransactionMapper extends MessageToMessageDecoder<Map<String, Messa
         handler = new DefaultTransactionMappingHandler();
         handler.setTxCode(txCode);
         ITransaction transaction = handler.mappingTransactionByTxCode(msg);
+        handler.createRouteMessageAndInit();
         transaction.setRequestMessage(msg);
         transaction.setResponseMessage(handler.createResponseMessage());
         Map<String, Object> context = new ConcurrentHashMap<>(64);
         transaction.setTransactionContext(context);
+        transaction.setSqlSessionFactory(DBUtils.UTILS.getUserSqlSessionFactory());
         out.add(transaction);
     }
 

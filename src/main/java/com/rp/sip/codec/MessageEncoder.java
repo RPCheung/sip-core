@@ -3,20 +3,13 @@ package com.rp.sip.codec;
 import com.rp.sip.component.IMessageInterceptor;
 import com.rp.sip.component.MessageObject;
 import com.rp.sip.component.MessageType;
-import com.rp.sip.model.MessageModel;
 import com.rp.sip.packer.PackMessage;
-import com.rp.sip.packer.impl.DefaultPackMessage;
-import com.rp.sip.utils.ModelUtils;
 import com.rp.sip.utils.SpringBeanUtils;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
-import org.json.XML;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
@@ -71,8 +64,8 @@ public class MessageEncoder extends MessageToByteEncoder<Map<String, MessageObje
             out.writeBytes(messageByteBuf);
         }
 
-        logger.info("request msg:" + out.toString(Charset.forName(charset)));
-        loggerMsg.info("request msg:" + out.toString(Charset.forName(charset)));
+        logger.info("server response msg:" + out.toString(Charset.forName(charset)));
+        loggerMsg.info("server response msg:" + out.toString(Charset.forName(charset)));
 
     }
 }

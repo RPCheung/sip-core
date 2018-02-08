@@ -2,12 +2,14 @@ package com.rp.sip.route.handlers;
 
 import com.rp.sip.route.HostCallBack;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
 
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.Charset;
 
 /**
  * Created by cheungrp on 17/8/3.
@@ -20,10 +22,7 @@ public class ReceiveMsgHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
         HostCallBack.receive(ctx.channel().id().asLongText(), (ByteBuf) msg);
-
-        //ctx.channel().attr(AttributeKey.valueOf("msg")).set(msg);
     }
 
     @Override
@@ -32,7 +31,7 @@ public class ReceiveMsgHandler extends ChannelInboundHandlerAdapter {
         ctx.channel().disconnect();
         ctx.channel().deregister();
         ctx.pipeline().remove(this);
-     //   logger.error(CommonUtils.getCommonUtils().printExceptionFormat(cause));
-     //   loggerErr.error(CommonUtils.getCommonUtils().printExceptionFormat(cause));
+        //   logger.error(CommonUtils.getCommonUtils().printExceptionFormat(cause));
+        //   loggerErr.error(CommonUtils.getCommonUtils().printExceptionFormat(cause));
     }
 }

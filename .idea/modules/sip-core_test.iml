@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module external.linked.project.id="sip:main" external.linked.project.path="$MODULE_DIR$/../.." external.root.project.path="$MODULE_DIR$/../.." external.system.id="GRADLE" external.system.module.group="server-integration-platform" external.system.module.type="sourceSet" external.system.module.version="1.0" type="JAVA_MODULE" version="4">
+<module external.linked.project.id="sip-core:test" external.linked.project.path="$MODULE_DIR$/../.." external.root.project.path="$MODULE_DIR$/../.." external.system.id="GRADLE" external.system.module.group="server-integration-platform" external.system.module.type="sourceSet" external.system.module.version="1.0" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="Spring" name="Spring">
+      <configuration />
+    </facet>
+  </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
-    <output url="file://$MODULE_DIR$/../../build/classes/main" />
+    <output-test url="file://$MODULE_DIR$/../../build/classes/test" />
     <exclude-output />
-    <content url="file://$MODULE_DIR$/../../src/main">
-      <sourceFolder url="file://$MODULE_DIR$/../../src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../src/main/resources" type="java-resource" />
+    <content url="file://$MODULE_DIR$/../../src/test">
+      <sourceFolder url="file://$MODULE_DIR$/../../src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../src/test/resources" type="java-test-resource" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="sip-core_main" />
     <orderEntry type="library" name="Gradle: org.springframework:spring-core:4.3.3.RELEASE" level="project" />
     <orderEntry type="library" name="Gradle: org.springframework:spring-beans:4.3.3.RELEASE" level="project" />
     <orderEntry type="library" name="Gradle: org.springframework:spring-context:4.3.3.RELEASE" level="project" />
@@ -46,6 +52,9 @@
     <orderEntry type="library" name="Gradle: jaxen:jaxen:1.1.6" level="project" />
     <orderEntry type="library" name="Gradle: mysql:mysql-connector-java:5.1.6" level="project" />
     <orderEntry type="library" name="Gradle: org.apache.logging.log4j:log4j-core:2.8.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.slf4j:slf4j-api:1.7.25" level="project" />
+    <orderEntry type="library" name="Gradle: org.slf4j:jcl-over-slf4j:1.7.25" level="project" />
+    <orderEntry type="library" name="Gradle: org.apache.logging.log4j:log4j-slf4j-impl:2.4.1" level="project" />
     <orderEntry type="library" name="Gradle: org.springframework:spring-web:4.3.3.RELEASE" level="project" />
     <orderEntry type="library" name="Gradle: org.aspectj:aspectjweaver:1.8.9" level="project" />
     <orderEntry type="library" name="Gradle: xml-apis:xml-apis:1.0.b2" level="project" />
@@ -55,4 +64,5 @@
     <orderEntry type="library" name="Gradle: com.googlecode.json-simple:json-simple:1.1.1" level="project" />
     <orderEntry type="library" name="Gradle: org.javassist:javassist:3.18.1-GA" level="project" />
   </component>
+  <component name="TestModuleProperties" production-module="sip-core_main" />
 </module>

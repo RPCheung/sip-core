@@ -1,10 +1,11 @@
 package com.rp.sip.message;
 
+import com.rp.sip.annotation.SipMessage;
 import com.rp.sip.component.MessageObject;
-import com.rp.sip.component.sign.SipMessage;
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.jxpath.JXPathContext;
 
+import java.lang.annotation.Annotation;
 import java.util.Date;
 import java.util.List;
 
@@ -21,14 +22,23 @@ public class DefaultMessageObject implements MessageObject {
         this.context.setLenient(true);
         MessageBeanFactory factory = new MessageBeanFactory();
         this.context.setFactory(factory);
-        if (!(this.context.getContextBean() instanceof SipMessage)) {
-            throw new IllegalArgumentException("the pojo is not implementation of SipMessage");
+        Annotation[] annotations = this.context.getContextBean().getClass().getAnnotations();
+        Annotation annotation = null;
+
+        for (Annotation temp : annotations) {
+            if ((annotation = temp.annotationType().getAnnotation(SipMessage.class)) != null) {
+                break;
+            }
+        }
+
+        if (annotation == null) {
+            throw new IllegalArgumentException("the pojo is not with @*Message");
         }
     }
 
     @Override
-    public SipMessage getSipMessagePojo() {
-        return SipMessage.class.cast(this.context.getContextBean());
+    public Object getSipMessagePojo() {
+        return this.context.getContextBean();
     }
 
     @Override
@@ -192,14 +202,11 @@ public class DefaultMessageObject implements MessageObject {
 
     private void setObjectValue(String xpath, Object val) {
         if (xpath.contains("_")) {
-            System.out.println(filterCharacter(xpath, "_"));
             this.context.createPathAndSetValue(filterCharacter(xpath, "_"), val);
         } else if (xpath.contains("-")) {
             this.context.createPathAndSetValue(filterCharacter(xpath, "_"), val);
-            System.out.println(filterCharacter(xpath, "-"));
         } else {
             this.context.createPathAndSetValue(xpath, val);
-            System.out.println(xpath);
         }
     }
 

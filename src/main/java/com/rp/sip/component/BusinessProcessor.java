@@ -1,6 +1,7 @@
 package com.rp.sip.component;
 
 
+import com.rp.sip.route.SipRouteClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -11,17 +12,11 @@ import java.util.Map;
  */
 public interface BusinessProcessor {
 
-    void setBusinessProcessorId(String id);
-
     MessageObject executeWorkFlow() throws Exception;
 
-    void setProcessorContext(Map<String, Object> context);
-
-    void setInMessage(MessageObject messageModel);
-
-    void setOutMessage(MessageObject messageModel);
-
-    void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory);
+    void setProcessorContext(UserComponent component);
 
     void setSqlSession(SqlSession sqlSession);
+
+
 }

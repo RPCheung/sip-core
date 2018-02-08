@@ -2,6 +2,10 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="sip-_main" target="1.8" />
+      <module name="sip-_test" target="1.8" />
+      <module name="sip-core_main" target="1.8" />
+      <module name="sip-core_test" target="1.8" />
       <module name="sip_main" target="1.8" />
       <module name="sip_test" target="1.8" />
     </bytecodeTargetLevel>

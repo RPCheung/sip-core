@@ -73,8 +73,11 @@ public enum SpringBeanUtils {
         return BeanDefinitionBuilder.genericBeanDefinition(clz);
     }
 
-    public BeanDefinitionBuilder addSpringBeanDefinitionFromUserClassLoader(String className) throws ClassNotFoundException {
-        return BeanDefinitionBuilder.genericBeanDefinition(ClassLoadUtils.utils.getSipUserClassloader().loadClass(className));
+    public boolean addSpringBean4Usesr(Class clz, String beanId) throws ClassNotFoundException {
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder
+                .genericBeanDefinition(clz);
+        registerSpringBeanDefinition(builder, beanId);
+        return null != SpringBeanUtils.UTILS.getSpringBeanById(beanId);
     }
 
 

@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
 import java.net.*;
 import java.text.SimpleDateFormat;
@@ -84,6 +85,17 @@ public class CommonUtils {
         String errMsg = new String(outputStream.toByteArray());
         logger.error(":" + errMsg);
         return errMsg;
+    }
+
+    public boolean isClassWithAnnotation(Class clz, String className) throws ClassNotFoundException {
+        Class clzz = ClassLoadUtils.utils.createSipUserClass(className);
+        Annotation annotation = clzz.getAnnotation(clz);
+        return annotation != null;
+    }
+
+    public <T extends Annotation> T getClassAnnotation(Class<T> clz, String className) throws ClassNotFoundException {
+        Class clzz = ClassLoadUtils.utils.createSipUserClass(className);
+        return (T) clzz.getAnnotation(clz);
     }
 
 

@@ -3,11 +3,15 @@ package com.rp.sip.controller;
 
 import com.rp.sip.component.MessageObject;
 import com.rp.sip.component.BusinessProcessor;
+import com.rp.sip.component.UserComponent;
 import com.rp.sip.utils.ClassLoadUtils;
 import com.rp.sip.utils.CommonUtils;
 import com.rp.sip.utils.DBUtils;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,6 +54,18 @@ public class BusinessController extends ChannelInboundHandlerAdapter {
         ctx.channel().writeAndFlush(finalTxEntry);
     }
 
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleStateEvent e = (IdleStateEvent) evt;
+            if (e.state() == IdleState.READER_IDLE) {
+                ctx.writeAndFlush(Unpooled.copiedBuffer(new byte[]{0, 0}));
+            } else if (e.state() == IdleState.WRITER_IDLE) {
+                ctx.writeAndFlush(Unpooled.copiedBuffer(new byte[]{0, 0}));
+            }
+        }
+        super.userEventTriggered(ctx, evt);
+    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

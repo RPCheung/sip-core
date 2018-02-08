@@ -1,4 +1,4 @@
-package com.rp.sip.codec;
+package com.rp.sip.route.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -51,8 +51,8 @@ public class LengthFieldPrepender extends MessageToMessageEncoder<ByteBuf> {
         newContentBuf.writeBytes(formattedLengthBytes, 0, formattedLengthBytes.length);
         msg.readBytes(newContentBuf);
         out.add(newContentBuf);
-        logger.info("server response msg: " + newContentBuf.toString(Charset.forName(this.charset)));
-        loggerMsg.info("server response msg: " + newContentBuf.toString(Charset.forName(this.charset)));
+        logger.info("route request msg: " + newContentBuf.toString(Charset.forName(this.charset)));
+        loggerMsg.info("route request msg: " + newContentBuf.toString(Charset.forName(this.charset)));
 
     }
 }

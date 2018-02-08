@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public interface UserDbDAO {
 
-    @Select("select * from user_db where host=#{host}")
+    @Select("select * from sip_user_db where host=#{host}")
     Map<String, Object> queryDbSetting(@Param(value = "host") String host);
 
 

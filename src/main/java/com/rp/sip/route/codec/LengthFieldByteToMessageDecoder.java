@@ -1,14 +1,10 @@
-package com.rp.sip.codec;
+package com.rp.sip.route.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.util.CharsetUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
@@ -38,15 +34,19 @@ public class LengthFieldByteToMessageDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
 
-        long length = msg.retainedSlice(lengthFieldOffset, lengthFieldLength).readLong();
-        msg.release();
+        long length = msg.retainedSlice(lengthFieldOffset, lengthFieldLength).readLong(); //引用增加一次
+
+        logger.info("route receive length:" + length);
+        loggerMsg.info("route receive length:" + length);
+
+        logger.info("route receive msg:" + msg.toString(Charset.forName(charset)));
+        loggerMsg.info("route receive msg:" + msg.toString(Charset.forName(charset)));
+
+        msg.release(); // 减少一次引用
 
         if (msg.discardReadBytes().readableBytes() != length + lengthFieldLength) {
             return;
         }
-
-        logger.info("server request length:" + length);
-        loggerMsg.info("server request length:" + length);
 
         msg.skipBytes(lengthFieldLength);
         out.add(msg.readBytes((int) length));

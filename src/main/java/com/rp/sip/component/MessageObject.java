@@ -1,6 +1,5 @@
 package com.rp.sip.component;
 
-import com.rp.sip.component.sign.SipMessage;
 import io.netty.buffer.ByteBuf;
 
 import java.util.Date;
@@ -56,6 +55,6 @@ public interface MessageObject {
 
     void setMessageObject(String key, MessageObject value);
 
-    SipMessage getSipMessagePojo();
+    Object getSipMessagePojo();
 
 }

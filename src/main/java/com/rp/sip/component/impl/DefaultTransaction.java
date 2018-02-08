@@ -3,6 +3,8 @@ package com.rp.sip.component.impl;
 import com.rp.sip.component.BusinessProcessor;
 import com.rp.sip.component.ITransaction;
 import com.rp.sip.component.MessageObject;
+import com.rp.sip.route.SipRouteClient;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.msgpack.annotation.Message;
 
 
@@ -17,7 +19,10 @@ public class DefaultTransaction implements ITransaction {
     private Map<String, Object> context;
     private MessageObject requestMessage;
     private MessageObject responseMessage;
-    private BusinessProcessor businessProcessor;
+
+    private MessageObject routeRequestMessage;
+    private MessageObject routeResponseMessage;
+    private SqlSessionFactory sessionFactory;
 
     public DefaultTransaction(String txCode) {
         this.txCode = txCode;
@@ -49,6 +54,16 @@ public class DefaultTransaction implements ITransaction {
     }
 
     @Override
+    public void setRouteRequestMessage(MessageObject messageObject) {
+        this.routeRequestMessage = messageObject;
+    }
+
+    @Override
+    public MessageObject getRouteRequestMessage() {
+        return this.routeRequestMessage;
+    }
+
+    @Override
     public void setResponseMessage(MessageObject messageObject) {
         this.responseMessage = messageObject;
     }
@@ -59,22 +74,13 @@ public class DefaultTransaction implements ITransaction {
     }
 
     @Override
-    public BusinessProcessor getBusiness() {
-        return this.businessProcessor;
+    public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) {
+        this.sessionFactory = sqlSessionFactory;
     }
 
     @Override
-    public void setBusiness(BusinessProcessor businessProcessor) {
-        this.businessProcessor = businessProcessor;
+    public SqlSessionFactory getSqlSessionFactory() {
+        return this.sessionFactory;
     }
 
-    @Override
-    public Object getSipDbSession() {
-        return null;
-    }
-
-    @Override
-    public void setSipDbSession( ) {
-
-    }
 }

@@ -1,6 +1,8 @@
 package com.rp.sip.dispatcher;
 
 import com.rp.sip.component.ITransaction;
+import com.rp.sip.component.UserComponent;
+import com.rp.sip.component.impl.UserComponentImpl;
 import com.rp.sip.db.mapper.SipSettingDAO;
 import com.rp.sip.db.mapper.SipTranDAO;
 import com.rp.sip.handlers.BusinessDispatcherHandler;
@@ -37,10 +39,9 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
         if (SpringBeanUtils.UTILS.isContainsBean4Id("customBusinessDispatcherHandler")) {
             BusinessDispatcherHandler dispatcherHandler = (BusinessDispatcherHandler) SpringBeanUtils.UTILS.getSpringBeanById("customBusinessDispatcherHandler");
             BusinessProcessor processor = dispatcherHandler.dispatcherHandle(transaction);
-            processor.setInMessage(transaction.getRequestMessage());
-            processor.setOutMessage(transaction.getResponseMessage());
-            Map<String, Object> context = new ConcurrentHashMap<>(128);
-            processor.setProcessorContext(context);
+            //
+            UserComponent component = new UserComponentImpl(transaction);
+            processor.setProcessorContext(component);
             out.add(processor);
         } else {
             String host = (String) getSettings().get("host");
@@ -53,19 +54,15 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
                 throw new NullPointerException("找不到 此交易业务处理器");
             }
 
-            processor.setInMessage(transaction.getRequestMessage());
-            processor.setOutMessage(transaction.getResponseMessage());
-            Map<String, Object> context = new ConcurrentHashMap<>(128);
-            processor.setProcessorContext(context);
-            processor.setBusinessProcessorId(txCode + ":" + processor);
-            processor.setSqlSessionFactory(DBUtils.UTILS.getUserSqlSessionFactory());
+            //
+            UserComponent component = new UserComponentImpl(transaction);
+            processor.setProcessorContext(component);
 
             Map<String, BusinessProcessor> processorEntry = new ConcurrentHashMap<>(1);
             processorEntry.put(txCode, processor);
             out.add(processorEntry);
         }
     }
-
 
     private Map<String, Object> getSettings() {
         SipSettingDAO settingDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipSettingDAO.class);
@@ -77,7 +74,6 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
         SipTranDAO sipTranDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipTranDAO.class);
         return sipTranDAO.queryTranByTxCode(host, txCode);
     }
-
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

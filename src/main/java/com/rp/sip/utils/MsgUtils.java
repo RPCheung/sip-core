@@ -5,8 +5,9 @@ import com.alibaba.druid.filter.config.ConfigTools;
 import com.alibaba.fastjson.JSON;
 import com.rp.sip.classloader.SipUserClassloader;
 import com.rp.sip.component.MessageObject;
-import com.rp.sip.component.sign.SipMessage;
 import com.rp.sip.message.DefaultMessageObject;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.apache.commons.jxpath.JXPathContext;
 
 import org.apache.logging.log4j.LogManager;
@@ -28,20 +29,13 @@ public enum MsgUtils {
     private Logger loggerMsg = LogManager.getLogger("com.rp.sip.SipMsg");
     private Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
+    @Deprecated
     public MessageObject createMessageObject(String messageBeanPackageName, String txCode) {
         try {
             Object o = Class.forName(messageBeanPackageName + "." + "T" + txCode).newInstance();
             JXPathContext context = JXPathContext.newContext(o);
             return new DefaultMessageObject(context);
-        } catch (InstantiationException e) {
-            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
-            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
-            return null;
-        } catch (IllegalAccessException e) {
-            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
-            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
-            return null;
-        } catch (ClassNotFoundException e) {
+        } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
             CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
             return null;
@@ -61,7 +55,7 @@ public enum MsgUtils {
         }
     }
 
-    public byte[] packMessage(SipMessage message) {
+    public byte[] packMessage(Object message) {
         return JSON.toJSONBytes(message);
     }
 
@@ -73,8 +67,19 @@ public enum MsgUtils {
         return document.getRootElement().selectSingleNode(txCodePath).getText().trim();
     }
 
-    public MessageObject createMessageObject(SipMessage message){
-       return new DefaultMessageObject(JXPathContext.newContext(message));
+
+    public MessageObject createMessageObject(Object message) {
+        return new DefaultMessageObject(JXPathContext.newContext(message));
+    }
+
+    public byte[] byteBuf2Bytes(ByteBuf message) {
+        byte[] messageBytes = new byte[message.readableBytes()];
+        message.readBytes(messageBytes);
+        return messageBytes;
+    }
+
+    public ByteBuf bytes2ByteBuf(byte[] message) {
+        return Unpooled.copiedBuffer(message);
     }
 
 

@@ -46,8 +46,8 @@ public class MessageDecoder extends MessageToMessageDecoder<Map<String, ByteBuf>
         String txCode = txEntry.keySet().iterator().next();
         ByteBuf msg = txEntry.remove(txCode);
 
-        logger.info("request msg:" + msg.toString(Charset.forName(charset)));
-        loggerMsg.info("request msg:" + msg.toString(Charset.forName(charset)));
+        logger.info("server receive msg:" + msg.toString(Charset.forName(charset)));
+        loggerMsg.info("server receive msg:" + msg.toString(Charset.forName(charset)));
         PackMessage packMessage;
         IMessageInterceptor messageInterceptor = (IMessageInterceptor) SpringBeanUtils.UTILS.getSpringBeanById("messageInterceptor");
 

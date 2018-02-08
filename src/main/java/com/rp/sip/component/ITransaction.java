@@ -1,6 +1,9 @@
 package com.rp.sip.component;
 
 
+import com.rp.sip.route.SipRouteClient;
+import org.apache.ibatis.session.SqlSessionFactory;
+
 import java.util.Map;
 
 /**
@@ -18,16 +21,16 @@ public interface ITransaction {
 
     MessageObject getRequestMessage();
 
+    void setRouteRequestMessage(MessageObject messageObject);
+
+    MessageObject getRouteRequestMessage();
+
     void setResponseMessage(MessageObject messageObject);
 
     MessageObject getResponseMessage();
 
-    BusinessProcessor getBusiness();
+    void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory);
 
-    void setBusiness(BusinessProcessor businessProcessor);
-
-    Object getSipDbSession();
-
-    void setSipDbSession();
+    SqlSessionFactory getSqlSessionFactory();
 
 }

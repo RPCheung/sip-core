@@ -41,7 +41,6 @@ public class SipReplayingDecoder extends ReplayingDecoder<DecoderMessageState> {
 
         switch (state()) {
             case READ_LENGTH:
-                //System.out.println(buf.readBytes(8).toString(CharsetUtil.UTF_8));
                 ByteBuf lengthBuf = buf.readBytes(this.length);
                 length1 = lengthIncludesLengthFieldLength ?
                         (Integer.parseInt(lengthBuf.toString(CharsetUtil.UTF_8)) - length) :
@@ -54,7 +53,6 @@ public class SipReplayingDecoder extends ReplayingDecoder<DecoderMessageState> {
                 contentBuf.writeLong(length1);
                 contentBuf.writeBytes(frame);
                 frame.release();
-                //   System.out.println("frame:====>>|| " + contentBuf.toString(CharsetUtil.UTF_8));
 
                 checkpoint(READ_LENGTH);
                 out.add(contentBuf);

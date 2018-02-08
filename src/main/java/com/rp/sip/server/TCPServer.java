@@ -43,17 +43,18 @@ public class TCPServer {
     private Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
     private EventExecutorGroup executorGroup;
+    private EventLoopGroup primary;
+    private EventLoopGroup secondary;
 
 
-    Map<String, Object> setting;
+    private Map<String, Object> setting;
 
     public void startup() {
         initDB();
-        createStopShell();
         this.executorGroup = new DefaultEventExecutorGroup((Integer) setting.get("connectNum"));
         ServerBootstrap bootstrap = new ServerBootstrap();
-        EventLoopGroup primary = new NioEventLoopGroup((Integer) setting.get("connectNum"));// 通过nio方式来接收连接和处理连接
-        EventLoopGroup secondary = new NioEventLoopGroup((Integer) setting.get("IONum"));
+        primary = new NioEventLoopGroup((Integer) setting.get("connectNum"));// 通过nio方式来接收连接和处理连接
+        secondary = new NioEventLoopGroup((Integer) setting.get("IONum"));
         bootstrap.group(primary, secondary);
         bootstrap.channel(NioServerSocketChannel.class);// 设置nio类型的channel
         bootstrap.localAddress(new InetSocketAddress((String) setting.get("host"), (Integer) setting.get("port")));// 设置监听端口
@@ -71,14 +72,15 @@ public class TCPServer {
                     ch.pipeline().addLast(new IdleStateHandler(60, 60, 30, TimeUnit.SECONDS));
                 }
                 // decoder
-                 boolean lengthIncludesLengthFieldLength = setting.get("lengthIncludesLengthFieldLength").equals(1);
-                ch.pipeline().addLast("replayingDecoder", new SipReplayingDecoder((Integer) setting.get("lengthFieldLength"), false));
+                boolean lengthIncludesLengthFieldLength = Boolean.valueOf((String) setting.get("lengthIncludesLengthFieldLength"));
+                ch.pipeline().addLast("replayingDecoder", new SipReplayingDecoder((Integer) setting.get("lengthFieldLength"), lengthIncludesLengthFieldLength));
                 ch.pipeline().addLast("byteToMessageDecoder", new LengthFieldByteToMessageDecoder((Integer) setting.get("lengthFieldLength"), (Integer) setting.get("lengthFieldOffset"), (String) setting.get("charset")));
                 ch.pipeline().addLast("txCodeDecoder", new TxCodeDecoder((String) setting.get("charset"), MessageType.valueOf((String) setting.get("msgType"))));
                 ch.pipeline().addLast("messageDecoder", new MessageDecoder((String) setting.get("charset"), MessageType.valueOf((String) setting.get("msgType"))));
                 // business operate
                 ch.pipeline().addLast("transactionMapper", new TransactionMapper());
                 ch.pipeline().addLast("businessDispatcher", new BusinessDispatcher((String) setting.get("charset")));
+                ch.pipeline().addLast(executorGroup,"idleStateHandler", new IdleStateHandler(10, 10, 0));
                 ch.pipeline().addLast(executorGroup, "businessController", new BusinessController());
                 // encoder
                 ch.pipeline().addLast("lengthFieldPrepender", new LengthFieldPrepender((Integer) setting.get("lengthFieldLength"), lengthIncludesLengthFieldLength, (String) setting.get("charset")));
@@ -89,18 +91,23 @@ public class TCPServer {
         try {
             ChannelFuture f = bootstrap.bind().sync();// 配置完成，开始绑定server，通过调用sync同步方法阻塞直到绑定成功
             logger.info(MethodHandles.lookup().lookupClass() + " started and listen on " + f.channel().localAddress().toString());
+            loggerMsg.info(MethodHandles.lookup().lookupClass() + " started and listen on " + f.channel().localAddress().toString());
             f.channel().closeFuture().sync();// 应用程序会一直等待，直到channel关闭
         } catch (InterruptedException e) {
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
             CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
         } finally {
-            try {
-                primary.shutdownGracefully().sync();//关闭EventLoopGroup，释放掉所有资源包括创建的线程
-                secondary.shutdownGracefully().sync();
-            } catch (InterruptedException e) {
-                CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
-                CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
-            }
+            shutdownGracefully();//关闭EventLoopGroup，释放掉所有资源包括创建的线程
+        }
+    }
+
+    public void shutdownGracefully() {
+        try {
+            primary.shutdownGracefully().sync();
+            secondary.shutdownGracefully().sync();
+        } catch (InterruptedException e) {
+            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
         }
     }
 
@@ -109,21 +116,5 @@ public class TCPServer {
         this.setting = settingDAO.querySetting();
     }
 
-    private void createStopShell() {
-        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-        String pid = runtime.getName().substring(0, runtime.getName().indexOf("@"));
-        String stopShell = "kill -9 " + pid + "\n echo sip has stopped.\n";
-        File sh = new File(System.getProperty("sip.home") + "/bin/stop.sh");
-        if (sh.exists()) {
-            sh.delete();
-        }
-        try {
-            IOUtils.copy(new StringReader(stopShell), new FileOutputStream(System.getProperty("sip.home") + "/bin/stop.sh"), "UTF-8");
-            sh = new File(System.getProperty("sip.home") + "/bin/stop.sh");
-            sh.setExecutable(true);
-        } catch (IOException e) {
-            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
-            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
-        }
-    }
+
 }

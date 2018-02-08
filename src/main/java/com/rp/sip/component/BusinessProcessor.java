@@ -14,7 +14,7 @@ public interface BusinessProcessor {
 
     MessageObject executeWorkFlow() throws Exception;
 
-    void setProcessorContext(UserComponent component);
+    void setUserComponent(UserComponent component);
 
     void setSqlSession(SqlSession sqlSession);
 

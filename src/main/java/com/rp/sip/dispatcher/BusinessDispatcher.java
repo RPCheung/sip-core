@@ -41,7 +41,7 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
             BusinessProcessor processor = dispatcherHandler.dispatcherHandle(transaction);
             //
             UserComponent component = new UserComponentImpl(transaction);
-            processor.setProcessorContext(component);
+            processor.setUserComponent(component);
             out.add(processor);
         } else {
             String host = (String) getSettings().get("host");
@@ -56,7 +56,7 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
 
             //
             UserComponent component = new UserComponentImpl(transaction);
-            processor.setProcessorContext(component);
+            processor.setUserComponent(component);
 
             Map<String, BusinessProcessor> processorEntry = new ConcurrentHashMap<>(1);
             processorEntry.put(txCode, processor);

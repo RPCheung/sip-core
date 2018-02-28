@@ -84,6 +84,4 @@ public class MessageDecoder extends MessageToMessageDecoder<Map<String, ByteBuf>
         finalTxEntry.put(txCode, messageObject);
         out.add(finalTxEntry);
     }
-
-
 }

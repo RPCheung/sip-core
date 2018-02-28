@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Created by cheungrp on 18/1/26.
  */
-public interface CustomDbDAO {
+public interface CustomComponentDAO {
 
     @Select("select * from sip_custom_component")
     Map<String, Object> queryDbCustom();

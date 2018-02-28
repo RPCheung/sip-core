@@ -3,6 +3,7 @@ package com.rp.sip.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,4 +56,5 @@ public class LengthFieldPrepender extends MessageToMessageEncoder<ByteBuf> {
         loggerMsg.info("server response msg: " + newContentBuf.toString(Charset.forName(this.charset)));
 
     }
+
 }

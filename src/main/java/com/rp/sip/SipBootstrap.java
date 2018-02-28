@@ -1,19 +1,10 @@
 package com.rp.sip;
 
 import com.rp.sip.rmi.SipBootstrapController;
-import com.rp.sip.route.SipRouteClient;
 import com.rp.sip.server.TCPServer;
 import com.rp.sip.utils.SpringBeanUtils;
-import org.apache.commons.io.IOUtils;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import javax.swing.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.StringReader;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -37,7 +28,7 @@ public class SipBootstrap extends UnicastRemoteObject implements SipBootstrapCon
         System.setProperty("sip.home", SIP_HOME);
     }
 
-    public SipBootstrap() throws RemoteException {
+    private SipBootstrap() throws RemoteException {
         super();
     }
 

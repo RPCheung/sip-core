@@ -1,38 +1,29 @@
 package com.rp.sip.utils;
 
 
-import com.alibaba.fastjson.JSONArray;
 import com.rp.sip.classloader.SipUserClassloader;
-import com.rp.sip.db.mapper.CustomDbDAO;
-import com.rp.sip.db.mapper.SipSettingDAO;
-import com.rp.sip.db.mapper.SipTranDAO;
-import com.rp.sip.handlers.BusinessDispatcherHandler;
-import com.rp.sip.route.SipRouteClient;
+import com.rp.sip.db.mapper.CustomComponentDAO;
+import com.rp.sip.route.pool.SipFixedChannelPool;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.msgpack.template.builder.BuildContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Created by cheungrp on 17/7/14.
@@ -92,25 +83,17 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
         initFindTxCodeHandler();
         initTransactionMappingHandler();
         initPackMessage();
-        initRouteReceiveMessageHandler();
     }
 
     private void initRouteAllComponent(){
-        initRoute();
+       // initRoute();
+        initRouteChannelPool();
     }
 
-    private void initRoute() {
-        try {
-            BeanDefinitionBuilder builder = SpringBeanUtils.UTILS
-                    .addSpringBeanDefinition(ClassLoadUtils.utils
-                            .getSipUserClassloader().loadClass("com.rp.sip.route.SipRouteClient"));
-            SpringBeanUtils.UTILS.registerSpringBeanDefinition(builder, "sipRouteClient");
-            SipRouteClient client = SpringBeanUtils.UTILS.getSpringBeanByType(SipRouteClient.class);
-            client.init();
-        } catch (ClassNotFoundException e) {
-            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
-            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
-        }
+    private void initRouteChannelPool(){
+        SipFixedChannelPool routeChannelPool = (SipFixedChannelPool) SpringBeanUtils.UTILS.getSpringBeanById("routeChannelPool");
+        routeChannelPool.init();
+
     }
 
     private void loadAllUserJar() {
@@ -138,8 +121,8 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
 
     private void initMessageInterceptor() {
         try {
-            CustomDbDAO customDbDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomDbDAO.class);
-            Map<String, Object> result = customDbDAO.queryDbCustom();
+            CustomComponentDAO customComponentDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomComponentDAO.class);
+            Map<String, Object> result = customComponentDAO.queryDbCustom();
             String messageInterceptor = (String) result.get("messageInterceptor");
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;
@@ -162,8 +145,8 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
 
     private void initBusinessDispatcherHandler() {
         try {
-            CustomDbDAO customDbDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomDbDAO.class);
-            Map<String, Object> result = customDbDAO.queryDbCustom();
+            CustomComponentDAO customComponentDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomComponentDAO.class);
+            Map<String, Object> result = customComponentDAO.queryDbCustom();
             String messageInterceptor = (String) result.get("businessDispatcherHandler");
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;
@@ -186,8 +169,8 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
 
     private void initFindTxCodeHandler() {
         try {
-            CustomDbDAO customDbDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomDbDAO.class);
-            Map<String, Object> result = customDbDAO.queryDbCustom();
+            CustomComponentDAO customComponentDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomComponentDAO.class);
+            Map<String, Object> result = customComponentDAO.queryDbCustom();
             String messageInterceptor = (String) result.get("findTxCodeHandler");
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;
@@ -210,8 +193,8 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
 
     private void initTransactionMappingHandler() {
         try {
-            CustomDbDAO customDbDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomDbDAO.class);
-            Map<String, Object> result = customDbDAO.queryDbCustom();
+            CustomComponentDAO customComponentDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomComponentDAO.class);
+            Map<String, Object> result = customComponentDAO.queryDbCustom();
             String messageInterceptor = (String) result.get("transactionMappingHandler");
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;
@@ -234,8 +217,8 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
 
     private void initPackMessage() {
         try {
-            CustomDbDAO customDbDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomDbDAO.class);
-            Map<String, Object> result = customDbDAO.queryDbCustom();
+            CustomComponentDAO customComponentDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomComponentDAO.class);
+            Map<String, Object> result = customComponentDAO.queryDbCustom();
             String messageInterceptor = (String) result.get("packMessage");
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;
@@ -258,8 +241,8 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
 
     private void initRouteReceiveMessageHandler() {
         try {
-            CustomDbDAO customDbDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomDbDAO.class);
-            Map<String, Object> result = customDbDAO.queryDbCustom();
+            CustomComponentDAO customComponentDAO = SpringBeanUtils.UTILS.getSpringBeanByType(CustomComponentDAO.class);
+            Map<String, Object> result = customComponentDAO.queryDbCustom();
             String messageInterceptor = (String) result.get("routeReceiveMessageHandler");
             if (messageInterceptor == null || messageInterceptor.equals("")) {
                 return;

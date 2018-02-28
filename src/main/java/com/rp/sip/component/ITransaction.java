@@ -1,7 +1,7 @@
 package com.rp.sip.component;
 
 
-import com.rp.sip.route.SipRouteClient;
+import com.rp.sip.route.IRoute;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.util.Map;
@@ -32,5 +32,10 @@ public interface ITransaction {
     void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory);
 
     SqlSessionFactory getSqlSessionFactory();
+
+    void setRoute(IRoute route);
+
+    IRoute getRoute();
+
 
 }

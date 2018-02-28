@@ -2,6 +2,7 @@ package com.rp.sip.component;
 
 import io.netty.buffer.ByteBuf;
 
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 
@@ -56,5 +57,9 @@ public interface MessageObject {
     void setMessageObject(String key, MessageObject value);
 
     Object getSipMessagePojo();
+
+    String toString();
+
+    String toString(Charset charset);
 
 }

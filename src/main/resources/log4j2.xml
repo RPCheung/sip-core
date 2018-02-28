@@ -61,6 +61,17 @@
                     pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
             <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
         </RollingFile>
+        <!-- deadlockChecker appender -->
+        <RollingFile name="deadlockCheckerMsg" fileName="${logDir}/msg/SIP_DEADLOCK_CHECKER_MSG.log"
+                     filePattern="${logDir}/msg/SIP_DEADLOCK_CHECKER_MSG.log.%d{yyyy-MM-dd}">
+            <Filters>
+                <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout
+                    pattern="****** ##### %t ##### ****** =======&gt; [%p] [%d{yyyy-MM-dd HH:mm:ss}] &lt; %c &gt; [(%x %M %L)] (%m) %n"/>
+            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        </RollingFile>
         <!-- SQL appender -->
         <RollingFile name="sip.db" fileName="${logDir}/msg/SIP_DB_MSG.log"
                      filePattern="${logDir}/msg/SIP_DB_MSG.log.%d{yyyy-MM-dd}">
@@ -96,6 +107,10 @@
         </logger>
         <logger name="druid.sql.ResultSet" level="debug" additivity="false">
             <appender-ref ref="sip.db"/>
+        </logger>
+        <!-- DEADLOCK_CHECKER LOGGER -->
+        <logger name="com.rp.sip.deadlockCheckerMsg" level="info" additivity="false">
+            <appender-ref ref="deadlockCheckerMsg"/>
         </logger>
     </loggers>
 </Configuration>

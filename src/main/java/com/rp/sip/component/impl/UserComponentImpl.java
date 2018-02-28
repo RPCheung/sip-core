@@ -3,6 +3,7 @@ package com.rp.sip.component.impl;
 import com.rp.sip.component.ITransaction;
 import com.rp.sip.component.MessageObject;
 import com.rp.sip.component.UserComponent;
+import com.rp.sip.route.IRoute;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.util.Map;
@@ -45,6 +46,11 @@ public class UserComponentImpl implements UserComponent {
     @Override
     public MessageObject getRouteRequestMessage() {
         return transaction.getRouteRequestMessage();
+    }
+
+    @Override
+    public IRoute getRoute() {
+        return transaction.getRoute();
     }
 
 

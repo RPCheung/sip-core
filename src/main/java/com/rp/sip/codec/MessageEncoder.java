@@ -58,10 +58,11 @@ public class MessageEncoder extends MessageToByteEncoder<Map<String, MessageObje
             byte[] messageBytes = new byte[messageByteBuf.readableBytes()];
             messageByteBuf.readBytes(messageBytes);
             out.writeBytes(messageInterceptor.afterMarshal(messageBytes));
-
+            messageByteBuf.release();
         } else {
             messageByteBuf = packMessage.packMessage(messageObject, this.messageType, txCode);
             out.writeBytes(messageByteBuf);
+            messageByteBuf.release();
         }
 
         logger.info("server response msg:" + out.toString(Charset.forName(charset)));

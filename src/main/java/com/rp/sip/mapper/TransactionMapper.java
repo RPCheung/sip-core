@@ -38,6 +38,7 @@ public class TransactionMapper extends MessageToMessageDecoder<Map<String, Messa
             if (transaction != null) {
                 transaction.setRequestMessage(msg);
                 transaction.setResponseMessage(handler.createResponseMessage());
+                transaction.setRoute(handler.createRouteMessageAndInit());
                 Map<String, Object> context = new ConcurrentHashMap<>(64);
                 transaction.setTransactionContext(context);
                 transaction.setSqlSessionFactory(DBUtils.UTILS.getUserSqlSessionFactory());
@@ -48,9 +49,10 @@ public class TransactionMapper extends MessageToMessageDecoder<Map<String, Messa
         handler = new DefaultTransactionMappingHandler();
         handler.setTxCode(txCode);
         ITransaction transaction = handler.mappingTransactionByTxCode(msg);
-        handler.createRouteMessageAndInit();
+        transaction.setRoute(handler.createRouteMessageAndInit());
         transaction.setRequestMessage(msg);
         transaction.setResponseMessage(handler.createResponseMessage());
+        handler.createRouteMessageAndInit();
         Map<String, Object> context = new ConcurrentHashMap<>(64);
         transaction.setTransactionContext(context);
         transaction.setSqlSessionFactory(DBUtils.UTILS.getUserSqlSessionFactory());

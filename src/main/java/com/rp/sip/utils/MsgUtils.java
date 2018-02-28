@@ -3,6 +3,8 @@ package com.rp.sip.utils;
 
 import com.alibaba.druid.filter.config.ConfigTools;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.rp.sip.classloader.SipUserClassloader;
 import com.rp.sip.component.MessageObject;
 import com.rp.sip.message.DefaultMessageObject;
@@ -43,7 +45,7 @@ public enum MsgUtils {
     }
 
     public <T> T unpackMessage(byte[] message, String clzz) {
-        if (message.length == 0) {
+        if (message == null || message.length == 0) {
             return null;
         }
         SipUserClassloader classloader = SpringBeanUtils.UTILS.getSpringBeanByType(SipUserClassloader.class);
@@ -56,7 +58,8 @@ public enum MsgUtils {
     }
 
     public byte[] packMessage(Object message) {
-        return JSON.toJSONBytes(message);
+        FastJsonConfig fastJsonConfig = new FastJsonConfig();
+        return JSON.toJSONBytes(message, SerializerFeature.WriteMapNullValue);
     }
 
 
@@ -73,12 +76,19 @@ public enum MsgUtils {
     }
 
     public byte[] byteBuf2Bytes(ByteBuf message) {
+        if (message == null) {
+            return null;
+        }
         byte[] messageBytes = new byte[message.readableBytes()];
         message.readBytes(messageBytes);
+        message.release();
         return messageBytes;
     }
 
     public ByteBuf bytes2ByteBuf(byte[] message) {
+        if (message.length == 0) {
+            return null;
+        }
         return Unpooled.copiedBuffer(message);
     }
 

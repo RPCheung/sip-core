@@ -63,7 +63,6 @@ public class DefaultFindTxCodeHandler implements FindTxCodeHandler {
                 return null;
             }
             case OBJ: {
-
                 byte[] message = new byte[request.readableBytes()];
                 request.readBytes(message);
 
@@ -74,6 +73,9 @@ public class DefaultFindTxCodeHandler implements FindTxCodeHandler {
                 Object o = MsgUtils.UTILS.unpackMessage(message, (String) setting.get("txCodePojo"));
                 context = JXPathContext.newContext(o);
                 return (String) context.getValue(txCodePath);
+            }
+            case AUTO: {
+                return null;
             }
             default: {
                 return null;

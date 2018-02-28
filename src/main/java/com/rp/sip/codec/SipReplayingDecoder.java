@@ -5,12 +5,16 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.ReplayingDecoder;
 import io.netty.util.CharsetUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -20,6 +24,9 @@ import static com.rp.sip.codec.DecoderMessageState.READ_LENGTH;
  * Created by cheungrp on 17/9/15.
  */
 public class SipReplayingDecoder extends ReplayingDecoder<DecoderMessageState> {
+
+    private Logger loggerMsg = LogManager.getLogger("com.rp.sip.SipMsg");
+    private Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
     private int length1;
 
@@ -31,6 +38,13 @@ public class SipReplayingDecoder extends ReplayingDecoder<DecoderMessageState> {
         super(READ_LENGTH);
         this.length = length;
         this.lengthIncludesLengthFieldLength = lengthIncludesLengthFieldLength;
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        logger.info("与 [" + ctx.channel().remoteAddress() + "] 创建了连接");
+        loggerMsg.info("与 [" + ctx.channel().remoteAddress() + "] 创建了连接");
+        super.channelActive(ctx);
     }
 
     @Override

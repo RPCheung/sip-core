@@ -1,5 +1,6 @@
 package com.rp.sip.component;
 
+import com.rp.sip.route.IRoute;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -19,5 +20,7 @@ public interface UserComponent {
     SqlSessionFactory getSqlSessionFactory();
 
     MessageObject getRouteRequestMessage();
+
+    IRoute getRoute();
 
 }

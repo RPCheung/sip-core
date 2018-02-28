@@ -1,11 +1,19 @@
 package com.rp.sip.message;
 
+import com.alibaba.fastjson.JSON;
 import com.rp.sip.annotation.SipMessage;
 import com.rp.sip.component.MessageObject;
+import com.rp.sip.utils.CommonUtils;
 import io.netty.buffer.ByteBuf;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.jxpath.JXPathContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandles;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 
@@ -13,6 +21,10 @@ import java.util.List;
  * Created by cheungrp on 17/11/3.
  */
 public class DefaultMessageObject implements MessageObject {
+
+    private Logger loggerMsg = LogManager.getLogger("com.rp.sip.SipMsg");
+    private Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
 
     private JXPathContext context;
 
@@ -22,6 +34,9 @@ public class DefaultMessageObject implements MessageObject {
         this.context.setLenient(true);
         MessageBeanFactory factory = new MessageBeanFactory();
         this.context.setFactory(factory);
+        if (this.context.getContextBean() == null) {
+            throw new IllegalArgumentException(" message is null ");
+        }
         Annotation[] annotations = this.context.getContextBean().getClass().getAnnotations();
         Annotation annotation = null;
 
@@ -39,6 +54,22 @@ public class DefaultMessageObject implements MessageObject {
     @Override
     public Object getSipMessagePojo() {
         return this.context.getContextBean();
+    }
+
+    @Override
+    public String toString(Charset charset) {
+        try {
+            return IOUtils.toString(JSON.toJSONBytes(getSipMessagePojo()), charset.toString());
+        } catch (IOException e) {
+            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
+            return null;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return getSipMessagePojo().toString();
     }
 
     @Override

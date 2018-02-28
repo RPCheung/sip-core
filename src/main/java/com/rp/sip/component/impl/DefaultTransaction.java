@@ -1,11 +1,9 @@
 package com.rp.sip.component.impl;
 
-import com.rp.sip.component.BusinessProcessor;
 import com.rp.sip.component.ITransaction;
 import com.rp.sip.component.MessageObject;
-import com.rp.sip.route.SipRouteClient;
+import com.rp.sip.route.IRoute;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.msgpack.annotation.Message;
 
 
 import java.util.Map;
@@ -22,7 +20,10 @@ public class DefaultTransaction implements ITransaction {
 
     private MessageObject routeRequestMessage;
     private MessageObject routeResponseMessage;
+    private IRoute route;
+
     private SqlSessionFactory sessionFactory;
+
 
     public DefaultTransaction(String txCode) {
         this.txCode = txCode;
@@ -81,6 +82,16 @@ public class DefaultTransaction implements ITransaction {
     @Override
     public SqlSessionFactory getSqlSessionFactory() {
         return this.sessionFactory;
+    }
+
+    @Override
+    public void setRoute(IRoute route) {
+        this.route = route;
+    }
+
+    @Override
+    public IRoute getRoute() {
+        return this.route;
     }
 
 }

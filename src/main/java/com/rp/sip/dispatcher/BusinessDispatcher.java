@@ -54,7 +54,6 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
                 throw new NullPointerException("找不到 此交易业务处理器");
             }
 
-            //
             UserComponent component = new UserComponentImpl(transaction);
             processor.setUserComponent(component);
 
@@ -79,5 +78,12 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         CommonUtils.getCommonUtils().printExceptionFormat(logger, cause);
         CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, cause);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        logger.info("与 [" + ctx.channel().remoteAddress() + "] 关闭了连接");
+        loggerMsg.info("与 [" + ctx.channel().remoteAddress() + "] 关闭了连接");
+        super.channelInactive(ctx);
     }
 }

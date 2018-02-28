@@ -32,6 +32,7 @@ public class DefaultServerPackMessage implements PackMessage {
         byte[] message = new byte[request.readableBytes()];
         MessageObject messageObject;
         request.readBytes(message);
+        request.release();
         String host = (String) getSettings().get("host");
         String msgClassName = (String) getTran(host, txCode).get("req_msg_class");
         Object o = MsgUtils.UTILS.unpackMessage(message, msgClassName);

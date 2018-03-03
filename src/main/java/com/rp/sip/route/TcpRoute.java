@@ -5,6 +5,7 @@ import com.rp.sip.component.MessageObject;
 import com.rp.sip.route.handlers.PoolChannelHandler;
 import com.rp.sip.route.packer.PackMessage;
 import com.rp.sip.route.pool.SipFixedChannelPool;
+import com.rp.sip.utils.CommonUtils;
 import com.rp.sip.utils.MsgUtils;
 import com.rp.sip.utils.SpringBeanUtils;
 import io.netty.buffer.ByteBuf;
@@ -63,17 +64,23 @@ public class TcpRoute implements IRoute {
         Channel channel = channelPool.getChannelFromPool(address, handler);
         ByteBuf msg;
 
-        if (this.messageInterceptor != null) {
-            msg = this.packMessage.packMessage(this.messageInterceptor.beforeMarshal(messageObject));
-            msg = MsgUtils.UTILS.bytes2ByteBuf(this.messageInterceptor.afterMarshal(MsgUtils.UTILS.byteBuf2Bytes(msg)));
-            // 发出去的数据 自动释放
-            msg = sendAndReceiveMsg4Route(msg, channel);
-            msg = MsgUtils.UTILS.bytes2ByteBuf(this.messageInterceptor.afterMarshal(MsgUtils.UTILS.byteBuf2Bytes(msg)));
-            return this.packMessage.unpackMessage(msg);
-        } else {
-            msg = this.packMessage.packMessage(messageObject);
-            msg = sendAndReceiveMsg4Route(msg, channel);
-            return this.packMessage.unpackMessage(msg);
+        try {
+            if (this.messageInterceptor != null) {
+                msg = this.packMessage.packMessage(this.messageInterceptor.beforeMarshal(messageObject));
+                msg = MsgUtils.UTILS.bytes2ByteBuf(this.messageInterceptor.afterMarshal(MsgUtils.UTILS.byteBuf2Bytes(msg)));
+                // 发出去的数据 自动释放
+                msg = sendAndReceiveMsg4Route(msg, channel);
+                msg = MsgUtils.UTILS.bytes2ByteBuf(this.messageInterceptor.afterMarshal(MsgUtils.UTILS.byteBuf2Bytes(msg)));
+                return this.packMessage.unpackMessage(msg);
+            } else {
+                msg = this.packMessage.packMessage(messageObject);
+                msg = sendAndReceiveMsg4Route(msg, channel);
+                return this.packMessage.unpackMessage(msg);
+            }
+        } catch (Exception e) {
+            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
+            return null;
         }
     }
 

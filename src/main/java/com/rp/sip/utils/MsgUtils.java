@@ -1,15 +1,19 @@
 package com.rp.sip.utils;
 
 
-import com.alibaba.druid.filter.config.ConfigTools;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.rp.sip.classloader.SipUserClassloader;
 import com.rp.sip.component.MessageObject;
 import com.rp.sip.message.DefaultMessageObject;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.core.ClassLoaderReference;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.jxpath.JXPathContext;
 
 import org.apache.logging.log4j.LogManager;
@@ -68,6 +72,24 @@ public enum MsgUtils {
         StringReader in = new StringReader(xml);
         Document document = saxReader.read(in);
         return document.getRootElement().selectSingleNode(txCodePath).getText().trim();
+    }
+
+    public MessageObject xml2MessageObject(String charset, String rootElementName, byte[] xml, String msgClassName) throws ClassNotFoundException, IOException {
+        XStream stream = new XStream(null,
+                new DomDriver(charset, new XmlFriendlyNameCoder("__", "_")),
+                new ClassLoaderReference(ClassLoaderUtils.utils.getSipUserClassloader()));
+        stream.setMode(XStream.NO_REFERENCES);
+        stream.alias(rootElementName, ClassLoaderUtils.utils.createSipUserClass(msgClassName));
+        return new DefaultMessageObject(JXPathContext.newContext(stream.fromXML(IOUtils.toString(xml, charset))));
+    }
+
+    public byte[] messageObject2Xml(String charset, String rootElementName, MessageObject messageObject, String msgClassName) throws ClassNotFoundException {
+        XStream stream = new XStream(null,
+                new DomDriver(charset, new XmlFriendlyNameCoder("__", "_")),
+                new ClassLoaderReference(ClassLoaderUtils.utils.getSipUserClassloader()));
+        stream.setMode(XStream.NO_REFERENCES);
+        stream.alias(rootElementName, ClassLoaderUtils.utils.createSipUserClass(msgClassName));
+        return stream.toXML(messageObject.getSipMessagePojo()).getBytes();
     }
 
 

@@ -1,5 +1,6 @@
 package com.rp.sip.utils;
 
+import com.thoughtworks.xstream.converters.reflection.ReflectionConverter;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -15,27 +16,28 @@ import java.util.Map;
 /**
  * Created by RP on 2017/4/26.
  */
-public class XmlUtils {
+public enum XmlUtils {
 
-    private XmlUtils() {
-    }
+    utils;
 
-    private static class Instance {
-        public static XmlUtils instance = new XmlUtils();
-    }
 
-    public static XmlUtils getXmlUtils() {
-        return Instance.instance;
+    public String getRootElementName(String xml) throws DocumentException {
+        StringReader reader = new StringReader(xml);
+        SAXReader saxReader = new SAXReader();
+        Document document = saxReader.read(reader);
+        Element element = document.getRootElement();
+        return element.getName();
     }
 
     public Map<String, String> readXml(String content) throws DocumentException {
 
         StringReader reader = new StringReader(content);
         SAXReader saxReader = new SAXReader();
-        Document document =  saxReader.read(reader);
+        Document document = saxReader.read(reader);
         Element element = document.getRootElement();
         return readXml(element);
     }
+
 
     public Map<String, String> readXml(Element fElement) {
 

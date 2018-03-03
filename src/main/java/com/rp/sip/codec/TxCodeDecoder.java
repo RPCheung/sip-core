@@ -6,6 +6,7 @@ import com.rp.sip.db.mapper.SipSettingDAO;
 import com.rp.sip.db.mapper.SipTranDAO;
 import com.rp.sip.handlers.FindTxCodeHandler;
 
+import com.rp.sip.model.SIPInfo;
 import com.rp.sip.utils.SpringBeanUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -56,7 +57,8 @@ public class TxCodeDecoder extends MessageToMessageDecoder<ByteBuf> {
         // 从数据库 获取 msgType
         MessageType messageType = this.messageType;
         // 打解包  是为了 让 ByteBuf 转换为 MessageObject
-        Map<String, Object> setting = settingDAO.querySetting();
+        SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
+        Map<String, Object> setting = settingDAO.querySetting(info.getServerId());
         String txCodePath = (String) setting.get("txCodePath");
         logger.info("交易码路径:" + txCodePath);
         findTxCodeHandler.setTxCodePath(txCodePath);

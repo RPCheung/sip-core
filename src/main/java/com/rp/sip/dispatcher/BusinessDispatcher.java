@@ -7,6 +7,7 @@ import com.rp.sip.db.mapper.SipSettingDAO;
 import com.rp.sip.db.mapper.SipTranDAO;
 import com.rp.sip.handlers.BusinessDispatcherHandler;
 import com.rp.sip.component.BusinessProcessor;
+import com.rp.sip.model.SIPInfo;
 import com.rp.sip.utils.*;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -49,7 +50,7 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
             Map<String, Object> tran = getTran(host, txCode);
             String processorClass = (String) tran.get("business_processor_class");
 
-            BusinessProcessor processor = (BusinessProcessor) ClassLoadUtils.utils.createSipUserObject(processorClass);
+            BusinessProcessor processor = (BusinessProcessor) ClassLoaderUtils.utils.createSipUserObject(processorClass);
             if (processor == null) {
                 throw new NullPointerException("找不到 此交易业务处理器");
             }
@@ -65,7 +66,8 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
 
     private Map<String, Object> getSettings() {
         SipSettingDAO settingDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipSettingDAO.class);
-        return settingDAO.querySetting();
+        SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
+        return settingDAO.querySetting(info.getServerId());
     }
 
 

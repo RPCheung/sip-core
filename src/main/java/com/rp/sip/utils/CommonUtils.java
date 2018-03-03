@@ -88,13 +88,13 @@ public class CommonUtils {
     }
 
     public boolean isClassWithAnnotation(Class clz, String className) throws ClassNotFoundException {
-        Class clzz = ClassLoadUtils.utils.createSipUserClass(className);
+        Class clzz = ClassLoaderUtils.utils.createSipUserClass(className);
         Annotation annotation = clzz.getAnnotation(clz);
         return annotation != null;
     }
 
     public <T extends Annotation> T getClassAnnotation(Class<T> clz, String className) throws ClassNotFoundException {
-        Class clzz = ClassLoadUtils.utils.createSipUserClass(className);
+        Class clzz = ClassLoaderUtils.utils.createSipUserClass(className);
         return (T) clzz.getAnnotation(clz);
     }
 

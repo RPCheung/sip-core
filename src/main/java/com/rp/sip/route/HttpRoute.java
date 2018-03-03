@@ -172,7 +172,7 @@ public class HttpRoute implements IRoute {
             }
 
             return responseMessageObject;
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (e instanceof SocketTimeoutException) {
                 logger.error("路由接收响应失败!!!");
                 loggerMsg.error("路由接收响应失败!!!");
@@ -199,7 +199,7 @@ public class HttpRoute implements IRoute {
     }
 
 
-    private void makeExecute(byte[] message) throws IOException {
+    private void makeExecute(byte[] message) throws Exception {
 
         switch (method) {
             case GET: {

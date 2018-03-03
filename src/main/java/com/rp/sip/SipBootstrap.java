@@ -3,6 +3,7 @@ package com.rp.sip;
 import com.rp.sip.rmi.SipBootstrapController;
 import com.rp.sip.server.TCPServer;
 import com.rp.sip.utils.SpringBeanUtils;
+import org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.rmi.NotBoundException;
@@ -59,7 +60,6 @@ public class SipBootstrap extends UnicastRemoteObject implements SipBootstrapCon
     }
 
     private void startup() {
-
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");
 
         TCPServer tcpServer = TCPServer.class.cast(ctx.getBean("nettyServer"));

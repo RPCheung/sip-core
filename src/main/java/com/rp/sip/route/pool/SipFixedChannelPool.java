@@ -1,6 +1,7 @@
 package com.rp.sip.route.pool;
 
 import com.rp.sip.db.mapper.*;
+import com.rp.sip.model.SIPInfo;
 import com.rp.sip.route.handlers.PoolChannelHandler;
 import com.rp.sip.utils.CommonUtils;
 import com.rp.sip.utils.SpringBeanUtils;
@@ -95,7 +96,8 @@ public class SipFixedChannelPool {
 
     private Map<String, Object> getSettings() {
         SipSettingDAO settingDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipSettingDAO.class);
-        return settingDAO.querySetting();
+        SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
+        return settingDAO.querySetting(info.getServerId());
     }
 
     private Map<String, Object> getRoutePoolSetting() {

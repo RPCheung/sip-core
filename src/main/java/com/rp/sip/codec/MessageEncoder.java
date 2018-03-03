@@ -25,11 +25,8 @@ public class MessageEncoder extends MessageToByteEncoder<Map<String, MessageObje
 
     private String charset;
 
-    private MessageType messageType;
-
     public MessageEncoder(String charset, MessageType messageType) {
         this.charset = charset;
-        this.messageType = messageType;
     }
 
     @Override
@@ -54,13 +51,13 @@ public class MessageEncoder extends MessageToByteEncoder<Map<String, MessageObje
 
         if (messageInterceptor != null) {
             messageInterceptor.beforeMarshal(messageObject);
-            messageByteBuf = packMessage.packMessage(messageObject, this.messageType, txCode);
+            messageByteBuf = packMessage.packMessage(messageObject, txCode);
             byte[] messageBytes = new byte[messageByteBuf.readableBytes()];
             messageByteBuf.readBytes(messageBytes);
             out.writeBytes(messageInterceptor.afterMarshal(messageBytes));
             messageByteBuf.release();
         } else {
-            messageByteBuf = packMessage.packMessage(messageObject, this.messageType, txCode);
+            messageByteBuf = packMessage.packMessage(messageObject, txCode);
             out.writeBytes(messageByteBuf);
             messageByteBuf.release();
         }

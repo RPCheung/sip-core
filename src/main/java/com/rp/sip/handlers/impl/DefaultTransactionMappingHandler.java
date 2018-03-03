@@ -6,6 +6,7 @@ import com.rp.sip.component.impl.DefaultTransaction;
 import com.rp.sip.db.mapper.*;
 import com.rp.sip.handlers.TransactionMappingHandler;
 import com.rp.sip.message.DefaultMessageObject;
+import com.rp.sip.model.SIPInfo;
 import com.rp.sip.route.HostCallBack;
 import com.rp.sip.route.HttpRoute;
 import com.rp.sip.route.IRoute;
@@ -15,7 +16,7 @@ import com.rp.sip.route.codec.LengthFieldPrepender;
 import com.rp.sip.route.handlers.HttpTrustedHandler;
 import com.rp.sip.route.handlers.ReceiveMsgHandler;
 import com.rp.sip.route.packer.PackMessage;
-import com.rp.sip.utils.ClassLoadUtils;
+import com.rp.sip.utils.ClassLoaderUtils;
 import com.rp.sip.utils.CommonUtils;
 import com.rp.sip.utils.MsgUtils;
 import com.rp.sip.utils.SpringBeanUtils;
@@ -83,7 +84,7 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
             String txCode = transaction.getTxCode();
             Map<String, Object> tran = getTran(host, txCode);
             String resMsgClass = (String) tran.get("res_msg_class");
-            Object o = ClassLoadUtils.utils.createSipUserObject(resMsgClass);
+            Object o = ClassLoaderUtils.utils.createSipUserObject(resMsgClass);
             messageObject = new DefaultMessageObject(JXPathContext.newContext(o));
         } catch (ClassNotFoundException e) {
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
@@ -101,8 +102,8 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
 
     private Map<String, Object> getSettings() {
         SipSettingDAO settingDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipSettingDAO.class);
-
-        return settingDAO.querySetting();
+        SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
+        return settingDAO.querySetting(info.getServerId());
     }
 
     private Map<String, Object> getTran(String host, String txCode) {
@@ -123,18 +124,18 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
         return routeTranDAO.queryTran(routeTranId);
     }
 
-    private MessageObject createRouteMessage(String className) throws ClassNotFoundException {
-        return new DefaultMessageObject(JXPathContext.newContext(ClassLoadUtils.utils.createSipUserObject(className)));
+    private MessageObject createReqRouteMessage(String className) throws ClassNotFoundException {
+        return new DefaultMessageObject(JXPathContext.newContext(ClassLoaderUtils.utils.createSipUserObject(className)));
     }
 
-    private PackMessage createRoutePackMessage(Map<String, Object> result, String resMsgClass) {
+    private PackMessage createRoutePackMessage(Map<String, Object> result, String reqMsgClass, String resMsgClass) {
         PackMessage packMessage = null;
 
         String packMessageClassName = (String) result.get("packMessage");
 
         if (packMessageClassName != null) {
             try {
-                packMessage = (PackMessage) ClassLoadUtils.utils.createSipUserObject(packMessageClassName);
+                packMessage = (PackMessage) ClassLoaderUtils.utils.createSipUserObject(packMessageClassName);
             } catch (ClassNotFoundException e) {
                 CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
             }
@@ -143,19 +144,43 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
         if (packMessage == null) {
             packMessage = new PackMessage() {
                 @Override
-                public MessageObject unpackMessage(ByteBuf response) {
+                public MessageObject unpackMessage(ByteBuf response) throws Exception {
                     if (response == null) {
                         return null;
                     }
-                    return new DefaultMessageObject(JXPathContext.newContext(MsgUtils.UTILS.unpackMessage(MsgUtils.UTILS.byteBuf2Bytes(response), resMsgClass)));
+                    MessageType messageType = MessageType.valueOf((String) result.get("msgType"));
+                    switch (messageType) {
+                        case OBJ: {
+                            return new DefaultMessageObject(JXPathContext.newContext(MsgUtils.UTILS.unpackMessage(MsgUtils.UTILS.byteBuf2Bytes(response), resMsgClass)));
+                        }
+                        case XML: {
+                            return MsgUtils.UTILS.xml2MessageObject((String) getRouteSetting().get("charset"), (String) getRouteTran().get("xmlRootName"),
+                                    MsgUtils.UTILS.byteBuf2Bytes(response), resMsgClass);
+                        }
+                        default: {
+                            return null;
+                        }
+                    }
                 }
 
                 @Override
-                public ByteBuf packMessage(MessageObject request) {
+                public ByteBuf packMessage(MessageObject request) throws Exception {
                     if (request == null) {
                         return null;
                     }
-                    return MsgUtils.UTILS.bytes2ByteBuf(MsgUtils.UTILS.packMessage(request.getSipMessagePojo()));
+                    MessageType messageType = MessageType.valueOf((String) result.get("msgType"));
+                    switch (messageType) {
+                        case OBJ: {
+                            return MsgUtils.UTILS.bytes2ByteBuf(MsgUtils.UTILS.packMessage(request.getSipMessagePojo()));
+                        }
+                        case XML: {
+                            return MsgUtils.UTILS.bytes2ByteBuf(MsgUtils.UTILS.messageObject2Xml((String) getRouteSetting().get("charset"),
+                                    (String) getRouteTran().get("xmlRootName"), request, reqMsgClass));
+                        }
+                        default: {
+                            return null;
+                        }
+                    }
                 }
             };
         }
@@ -167,7 +192,7 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
         String messageInterceptorClassName = (String) result.get("messageInterceptor");
         if (messageInterceptorClassName != null) {
             try {
-                return (IMessageInterceptor) ClassLoadUtils.utils.createSipUserObject(messageInterceptorClassName);
+                return (IMessageInterceptor) ClassLoaderUtils.utils.createSipUserObject(messageInterceptorClassName);
             } catch (ClassNotFoundException e) {
                 CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
                 return null;
@@ -178,24 +203,27 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
     }
 
     private void initTcpRoute(String reqMsgClass, String resMsgClass) {
-        PackMessage packMessage = createRoutePackMessage(getRouteTran(), resMsgClass);
-        IRoute route = new TcpRoute(Boolean.parseBoolean((String) getRouteSetting().get("isShortConnection")), new InetSocketAddress((String) getRouteSetting().get("route_host"), Integer.parseInt((String) getRouteSetting().get("route_port"))), channelPipeline -> {
-            channelPipeline.addLast(new LengthFieldPrepender(Integer.parseInt((String) getRouteSetting().get("lengthFieldLength")),
-                    Boolean.valueOf((String) getRouteSetting().get("lengthIncludesLengthFieldLength")),
-                    (String) getRouteSetting().get("charset")));
-            channelPipeline.addLast(new SipReplayingDecoder(Integer.parseInt((String) getRouteSetting().get("lengthFieldLength")),
-                    Boolean.valueOf((String) getRouteSetting().get("lengthIncludesLengthFieldLength"))));
-            channelPipeline.addLast(new LengthFieldByteToMessageDecoder(Integer.parseInt((String) getRouteSetting().get("lengthFieldLength")),
-                    Integer.parseInt((String) getRouteSetting().get("lengthFieldOffset")),
-                    (String) getRouteSetting().get("charset")));
-            channelPipeline.addLast(new ReceiveMsgHandler());
-        }, packMessage,
+        PackMessage packMessage = createRoutePackMessage(getRouteTran(), reqMsgClass, resMsgClass);
+        IRoute route = new TcpRoute(Boolean.parseBoolean((String) getRouteSetting().get("isShortConnection")),
+                new InetSocketAddress((String) getRouteSetting().get("route_host"),
+                        Integer.parseInt((String) getRouteSetting().get("route_port"))),
+                channelPipeline -> {
+                    channelPipeline.addLast(new LengthFieldPrepender(Integer.parseInt((String) getRouteSetting().get("lengthFieldLength")),
+                            Boolean.valueOf((String) getRouteSetting().get("lengthIncludesLengthFieldLength")),
+                            (String) getRouteSetting().get("charset")));
+                    channelPipeline.addLast(new SipReplayingDecoder(Integer.parseInt((String) getRouteSetting().get("lengthFieldLength")),
+                            Boolean.valueOf((String) getRouteSetting().get("lengthIncludesLengthFieldLength"))));
+                    channelPipeline.addLast(new LengthFieldByteToMessageDecoder(Integer.parseInt((String) getRouteSetting().get("lengthFieldLength")),
+                            Integer.parseInt((String) getRouteSetting().get("lengthFieldOffset")),
+                            (String) getRouteSetting().get("charset")));
+                    channelPipeline.addLast(new ReceiveMsgHandler());
+                }, packMessage,
                 hasMessageInterceptor(getRouteTran()),
                 hasRouteReceiveMessageHandler(getRouteTran()),
                 Long.parseLong((String) getRouteSetting().get("timeout")),
                 Charset.forName((String) getRouteSetting().get("charset")));
         try {
-            transaction.setRouteRequestMessage(createRouteMessage(reqMsgClass));
+            transaction.setRouteRequestMessage(createReqRouteMessage(reqMsgClass));
             transaction.setRoute(route);
         } catch (ClassNotFoundException e) {
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
@@ -203,7 +231,7 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
     }
 
     private void initHttpRoute(String reqMsgClass, String resMsgClass) {
-        PackMessage packMessage = createRoutePackMessage(getRouteTran(), resMsgClass);
+        PackMessage packMessage = createRoutePackMessage(getRouteTran(), reqMsgClass, resMsgClass);
         IRoute route = new HttpRoute((String) getRouteSetting().get("uri"),
                 packMessage,
                 hasMessageInterceptor(getRouteTran()),
@@ -212,7 +240,7 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
                 Integer.parseInt((String) getRouteSetting().get("timeout")),
                 Charset.forName((String) getRouteSetting().get("charset")));
         try {
-            transaction.setRouteRequestMessage(createRouteMessage(reqMsgClass));
+            transaction.setRouteRequestMessage(createReqRouteMessage(reqMsgClass));
             transaction.setRoute(route);
         } catch (ClassNotFoundException e) {
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
@@ -223,7 +251,7 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
         String httpTrustedHandlerClassName = (String) result.get("trustedHandler");
         if (httpTrustedHandlerClassName != null) {
             try {
-                return (HttpTrustedHandler) ClassLoadUtils.utils.createSipUserObject(httpTrustedHandlerClassName);
+                return (HttpTrustedHandler) ClassLoaderUtils.utils.createSipUserObject(httpTrustedHandlerClassName);
             } catch (ClassNotFoundException e) {
                 CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
                 return null;
@@ -237,7 +265,7 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
         String receiveMessageHandlerClassName = (String) result.get("receiveMessageHandler");
         if (receiveMessageHandlerClassName != null) {
             try {
-                return (HostCallBack.RouteReceiveMessageHandler) ClassLoadUtils.utils.createSipUserObject(receiveMessageHandlerClassName);
+                return (HostCallBack.RouteReceiveMessageHandler) ClassLoaderUtils.utils.createSipUserObject(receiveMessageHandlerClassName);
             } catch (ClassNotFoundException e) {
                 CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
                 return null;

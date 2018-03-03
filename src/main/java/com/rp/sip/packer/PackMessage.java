@@ -1,8 +1,6 @@
 package com.rp.sip.packer;
 
 import com.rp.sip.component.MessageObject;
-import com.rp.sip.component.MessageType;
-import com.rp.sip.model.MessageModel;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -10,9 +8,9 @@ import io.netty.buffer.ByteBuf;
  */
 public interface PackMessage {
 
-    MessageObject unpackMessage(ByteBuf request, MessageType messageType,String txCode);
+    MessageObject unpackMessage(ByteBuf request, String txCode) throws Exception;
 
-    ByteBuf packMessage(MessageObject response, MessageType messageType,String txCode);
+    ByteBuf packMessage(MessageObject response, String txCode) throws Exception;
 
 
 }

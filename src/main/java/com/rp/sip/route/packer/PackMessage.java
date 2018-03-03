@@ -9,7 +9,7 @@ import io.netty.buffer.ByteBuf;
  */
 public interface PackMessage {
 
-    MessageObject unpackMessage(ByteBuf response);
+    MessageObject unpackMessage(ByteBuf response) throws Exception;
 
-    ByteBuf packMessage(MessageObject request);
+    ByteBuf packMessage(MessageObject request) throws Exception;
 }

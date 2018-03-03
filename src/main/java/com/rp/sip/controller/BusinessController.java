@@ -3,11 +3,12 @@ package com.rp.sip.controller;
 
 import com.rp.sip.component.MessageObject;
 import com.rp.sip.component.BusinessProcessor;
-import com.rp.sip.component.UserComponent;
-import com.rp.sip.utils.ClassLoadUtils;
+import com.rp.sip.utils.ClassLoaderUtils;
 import com.rp.sip.utils.CommonUtils;
 import com.rp.sip.utils.DBUtils;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
@@ -29,29 +30,50 @@ public class BusinessController extends ChannelInboundHandlerAdapter {
     private Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg == null) {
-            throw new RuntimeException("create BusinessModel error");
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        SqlSession session = null;
+        try {
+            if (msg == null) {
+                throw new RuntimeException("create BusinessModel error");
+            }
+
+            Thread.currentThread().setContextClassLoader(ClassLoaderUtils.utils.getSipUserClassloader());
+
+            Map<String, BusinessProcessor> processorEntry = (Map<String, BusinessProcessor>) msg;
+            String txCode = processorEntry.keySet().iterator().next();
+            BusinessProcessor businessProcessor = processorEntry.remove(txCode);
+
+            session = DBUtils.UTILS.getUserSqlSessionFactory().openSession(true);
+            businessProcessor.setSqlSession(session);
+            MessageObject resp = businessProcessor.executeWorkFlow();
+
+            Map<String, MessageObject> finalTxEntry = new ConcurrentHashMap<>(1);
+            if (resp == null) {
+                throw new NullPointerException("response msg can't be null .");
+            }
+            finalTxEntry.put(txCode, resp);
+            ChannelFuture channelFuture = ctx.channel().writeAndFlush(finalTxEntry);
+            channelFuture.addListener((ChannelFutureListener) future -> {
+                boolean isDone = future.isDone();
+                boolean isSuccess = future.isSuccess();
+                logger.info("响应是否完成: " + isDone);
+                loggerMsg.info("响应是否完成: " + isDone);
+                logger.info("响应是否成功: " + isSuccess);
+                loggerMsg.info("响应是否成功: " + isSuccess);
+            });
+        } catch (Exception e) {
+            if (session != null) {
+                session.rollback();
+                logger.error("出现异常!!!  事务被回滚.");
+                loggerMsg.error("出现异常!!!  事务被回滚.");
+            }
+            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
+        } finally {
+            if (session != null) {
+                session.close();
+            }
         }
-
-        Thread.currentThread().setContextClassLoader(ClassLoadUtils.utils.getSipUserClassloader());
-
-        Map<String, BusinessProcessor> processorEntry = (Map<String, BusinessProcessor>) msg;
-        String txCode = processorEntry.keySet().iterator().next();
-        BusinessProcessor businessProcessor = processorEntry.remove(txCode);
-
-        SqlSession session = DBUtils.UTILS.getUserSqlSessionFactory().openSession(true);
-        businessProcessor.setSqlSession(session);
-        MessageObject resp = businessProcessor.executeWorkFlow();
-        session.close();
-
-
-        Map<String, MessageObject> finalTxEntry = new ConcurrentHashMap<>(1);
-        if (resp == null) {
-            throw new NullPointerException("response msg can't be null .");
-        }
-        finalTxEntry.put(txCode, resp);
-        ctx.channel().writeAndFlush(finalTxEntry);
     }
 
     @Override

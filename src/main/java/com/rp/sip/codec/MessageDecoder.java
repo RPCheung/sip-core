@@ -1,14 +1,9 @@
 package com.rp.sip.codec;
 
 import com.rp.sip.component.IMessageInterceptor;
-import com.rp.sip.component.ITransaction;
 import com.rp.sip.component.MessageObject;
-import com.rp.sip.handlers.FindTxCodeHandler;
-import com.rp.sip.message.DefaultMessageObject;
 import com.rp.sip.component.MessageType;
-import com.rp.sip.model.MessageModel;
 import com.rp.sip.packer.PackMessage;
-import com.rp.sip.utils.ModelUtils;
 import com.rp.sip.utils.SpringBeanUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -18,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.invoke.MethodHandles;
-import java.nio.Buffer;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -65,10 +59,10 @@ public class MessageDecoder extends MessageToMessageDecoder<Map<String, ByteBuf>
             byte[] messageBytes = new byte[msg.readableBytes()];
             msg.copy().readBytes(messageBytes);
             messageBytes = messageInterceptor.beforeUnmarshal(messageBytes);
-            messageObject = packMessage.unpackMessage(Unpooled.copiedBuffer(messageBytes), messageType, txCode);
+            messageObject = packMessage.unpackMessage(Unpooled.copiedBuffer(messageBytes), txCode);
             messageInterceptor.afterUnmarshal(messageObject);
         } else {
-            messageObject = packMessage.unpackMessage(msg, messageType, txCode);
+            messageObject = packMessage.unpackMessage(msg, txCode);
         }
         if (messageObject == null) {
             throw new NullPointerException("messageInterceptor or packMessage return null");

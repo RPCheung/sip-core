@@ -6,6 +6,7 @@ import com.rp.sip.controller.BusinessController;
 import com.rp.sip.db.mapper.SipSettingDAO;
 import com.rp.sip.dispatcher.BusinessDispatcher;
 import com.rp.sip.mapper.TransactionMapper;
+import com.rp.sip.model.SIPInfo;
 import com.rp.sip.utils.CommonUtils;
 import com.rp.sip.utils.SpringBeanUtils;
 import io.netty.bootstrap.ServerBootstrap;
@@ -46,7 +47,6 @@ public class TCPServer {
     private EventLoopGroup primary;
     private EventLoopGroup secondary;
 
-
     private Map<String, Object> setting;
 
     public void startup() {
@@ -68,9 +68,6 @@ public class TCPServer {
 
                 //   pipeline管理channel中的Handler，在channel队列中添加一个handler来处理业务
                 ch.pipeline().channel().config().setAutoRead(true);
-                if (!true) {
-                    ch.pipeline().addLast(new IdleStateHandler(60, 60, 30, TimeUnit.SECONDS));
-                }
                 // decoder
                 boolean lengthIncludesLengthFieldLength = Boolean.valueOf((String) setting.get("lengthIncludesLengthFieldLength"));
                 ch.pipeline().addLast("replayingDecoder", new SipReplayingDecoder((Integer) setting.get("lengthFieldLength"), lengthIncludesLengthFieldLength));
@@ -113,7 +110,8 @@ public class TCPServer {
 
     private void initDB() {
         SipSettingDAO settingDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipSettingDAO.class);
-        this.setting = settingDAO.querySetting();
+        SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
+        this.setting = settingDAO.querySetting(info.getServerId());
     }
 
 

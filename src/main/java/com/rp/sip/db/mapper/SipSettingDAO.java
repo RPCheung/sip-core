@@ -12,29 +12,7 @@ import java.util.Map;
  */
 public interface SipSettingDAO {
 
-    @Select("select * from sip_setting ")
-    Map<String, Object> querySetting();
-
-
-    @Update("update sip_setting  set "
-            + "port = #{port}, "
-            + "charset = #{charset},"
-            + "txCodePath = #{txCodePath},"
-            + "initialBytesToStrip = #{initialBytesToStrip},"
-            + "lengthAdjustment = #{lengthAdjustment},"
-            + "msgType = #{msgType},"
-            + "IONum = #{IONum},"
-            + "lengthIncludesLengthFieldLength = #{lengthIncludesLengthFieldLength},"
-            + "timeout = #{timeout},"
-            + "lengthFieldOffset = #{lengthFieldOffset},"
-            + "lengthFieldLength = #{lengthFieldLength},"
-            + "connectNum = #{connectNum},"
-            + "httpContext = #{httpContext},"
-            + "protocol = #{protocol},"
-            + "txCodePojo = #{txCodePojo},"
-            + "executorPoolSize = #{executorPoolSize}"
-            + " where host = #{host}")
-    boolean editSetting(Map<String, Object> parameters);
-
+    @Select("select * from sip_setting where sip_server_id=#{serverId}")
+    Map<String, Object> querySetting(@Param(value = "serverId") String serverId);
 
 }

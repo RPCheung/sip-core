@@ -14,7 +14,7 @@ public interface SipTranDAO {
     @Select("select * from sip_tran_data where host=#{host}")
     List<Map<String, Object>> queryTran(@Param(value = "host") String host);
 
-    @Select("select * from sip_tran_data where host=#{host} and txCode=#{txCode}")
-    Map<String, Object> queryTranByTxCode(@Param(value = "host") String host, @Param(value = "txCode") String txCode);
+    @Select("select * from sip_tran_data where sip_server_id=#{serverId} and txCode=#{txCode}")
+    Map<String, Object> queryTranByTxCode(@Param(value = "serverId") String serverId, @Param(value = "txCode") String txCode);
 
 }

@@ -38,11 +38,11 @@ public class DefaultServerPackMessage implements PackMessage {
     public MessageObject unpackMessage(ByteBuf request, String txCode) throws Exception {
         byte[] message = MsgUtils.UTILS.byteBuf2Bytes(request);
         MessageObject messageObject = null;
-        String host = (String) getSettings().get("host");
         String charset = (String) getSettings().get("charset");
         MessageType messageType = MessageType.valueOf((String) getSettings().get("msgType"));
-        String msgClassName = (String) getTran(host, txCode).get("req_msg_class");
-        String rootElementName = (String) getTran(host, txCode).get("xmlRootName");
+        SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
+        String msgClassName = (String) getTran(info.getServerId(), txCode).get("req_msg_class");
+        String rootElementName = (String) getTran(info.getServerId(), txCode).get("xmlRootName");
 
         switch (messageType) {
             case XML: {
@@ -76,19 +76,19 @@ public class DefaultServerPackMessage implements PackMessage {
         return settingDAO.querySetting(info.getServerId());
     }
 
-    private Map<String, Object> getTran(String host, String txCode) {
+    private Map<String, Object> getTran(String serverId, String txCode) {
         SipTranDAO sipTranDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipTranDAO.class);
-        return sipTranDAO.queryTranByTxCode(host, txCode);
+        return sipTranDAO.queryTranByTxCode(serverId, txCode);
     }
 
     @Override
     public ByteBuf packMessage(MessageObject response, String txCode) throws Exception {
         DefaultMessageObject messageObject = (DefaultMessageObject) response;
         String charset = (String) getSettings().get("charset");
-        String host = (String) getSettings().get("host");
         MessageType messageType = MessageType.valueOf((String) getSettings().get("msgType"));
-        String rootElementName = (String) getTran(host, txCode).get("xmlRootName");
-        String msgClassName = (String) getTran(host, txCode).get("res_msg_class");
+        SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
+        String rootElementName = (String) getTran(info.getServerId(), txCode).get("xmlRootName");
+        String msgClassName = (String) getTran(info.getServerId(), txCode).get("res_msg_class");
 
         switch (messageType) {
 

@@ -45,9 +45,9 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
             processor.setUserComponent(component);
             out.add(processor);
         } else {
-            String host = (String) getSettings().get("host");
+            SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
             String txCode = transaction.getTxCode();
-            Map<String, Object> tran = getTran(host, txCode);
+            Map<String, Object> tran = getTran(info.getServerId(), txCode);
             String processorClass = (String) tran.get("business_processor_class");
 
             BusinessProcessor processor = (BusinessProcessor) ClassLoaderUtils.utils.createSipUserObject(processorClass);
@@ -71,9 +71,9 @@ public class BusinessDispatcher extends MessageToMessageDecoder<ITransaction> {
     }
 
 
-    private Map<String, Object> getTran(String host, String txCode) {
+    private Map<String, Object> getTran(String serverId, String txCode) {
         SipTranDAO sipTranDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipTranDAO.class);
-        return sipTranDAO.queryTranByTxCode(host, txCode);
+        return sipTranDAO.queryTranByTxCode(serverId, txCode);
     }
 
     @Override

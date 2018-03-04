@@ -64,8 +64,7 @@ public class TxCodeDecoder extends MessageToMessageDecoder<ByteBuf> {
         findTxCodeHandler.setTxCodePath(txCodePath);
         ByteBuf message = Unpooled.copiedBuffer(msg);
         String txCode = findTxCodeHandler.findTxCodeFromReqMsg(msg, messageType, setting);
-        String host = (String) setting.get("host");
-        Map<String, Object> tran = tranDAO.queryTranByTxCode(host, txCode);
+        Map<String, Object> tran = tranDAO.queryTranByTxCode(info.getServerId(), txCode);
         if (tran == null) {
             throw new RuntimeException("not found txCode");
         }

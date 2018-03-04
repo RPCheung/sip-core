@@ -80,9 +80,9 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
     public MessageObject createResponseMessage() {
         MessageObject messageObject;
         try {
-            String host = (String) getSettings().get("host");
             String txCode = transaction.getTxCode();
-            Map<String, Object> tran = getTran(host, txCode);
+            SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
+            Map<String, Object> tran = getTran(info.getServerId(), txCode);
             String resMsgClass = (String) tran.get("res_msg_class");
             Object o = ClassLoaderUtils.utils.createSipUserObject(resMsgClass);
             messageObject = new DefaultMessageObject(JXPathContext.newContext(o));
@@ -106,9 +106,9 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
         return settingDAO.querySetting(info.getServerId());
     }
 
-    private Map<String, Object> getTran(String host, String txCode) {
+    private Map<String, Object> getTran(String serverId, String txCode) {
         SipTranDAO sipTranDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipTranDAO.class);
-        return sipTranDAO.queryTranByTxCode(host, txCode);
+        return sipTranDAO.queryTranByTxCode(serverId, txCode);
     }
 
     private Map<String, Object> getRouteSetting() {
@@ -118,8 +118,8 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
     }
 
     private Map<String, Object> getRouteTran() {
-        String host = (String) getSettings().get("host");
-        String routeTranId = (String) getTran(host, this.txCode).get("route_tran_id");
+        SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
+        String routeTranId = (String) getTran(info.getServerId(), this.txCode).get("route_tran_id");
         RouteTranDAO routeTranDAO = SpringBeanUtils.UTILS.getSpringBeanByType(RouteTranDAO.class);
         return routeTranDAO.queryTran(routeTranId);
     }

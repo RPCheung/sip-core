@@ -16,6 +16,8 @@ import io.netty.channel.pool.ChannelPoolMap;
 import io.netty.channel.pool.FixedChannelPool;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureListener;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
@@ -56,8 +58,8 @@ public class SipFixedChannelPool {
                 ChannelPoolHandler handler = new ChannelPoolHandler() {
                     @Override
                     public void channelReleased(Channel ch) throws Exception {
-                        logger.info("与 [" + ch.remoteAddress() + "] 释放了连接.");
-                        loggerMsg.info("与 [" + ch.remoteAddress() + "] 释放了连接.");
+                        logger.info("与 [" + ch.remoteAddress() + "] 的连接返回了连接池.");
+                        loggerMsg.info("与 [" + ch.remoteAddress() + "] 的连接返回了连接池.");
                     }
 
                     @Override
@@ -67,7 +69,8 @@ public class SipFixedChannelPool {
 
                     @Override
                     public void channelAcquired(Channel ch) throws Exception {
-
+                        logger.info("[" + ch.pipeline().channel().remoteAddress() + "] 从连接池中获取了连接.");
+                        loggerMsg.info("[" + ch.pipeline().channel().remoteAddress() + "] 从连接池中获取了连接.");
                     }
                 };
                 return new FixedChannelPool(bootstrap.remoteAddress(key), handler, Integer.parseInt((String) getRoutePoolSetting().get("maxConnections")));
@@ -76,18 +79,18 @@ public class SipFixedChannelPool {
     }
 
     public Channel getChannelFromPool(InetSocketAddress address, PoolChannelHandler poolChannelHandler) {
-        Future<Channel> future;
-        Channel channel = null;
+        SipFixedChannelPool.channelHandler = poolChannelHandler;
         try {
-            SipFixedChannelPool.channelHandler = poolChannelHandler;
-            future = SipFixedChannelPool.poolMap.get(address).acquire();
-            channel = future.get();
-            logger.info("[" + channel.remoteAddress() + "] 获取了连接.");
-            loggerMsg.info("[" + channel.remoteAddress() + "] 获取了连接.");
+            Future<Channel> future = SipFixedChannelPool.poolMap.get(address).acquire();
+            Channel channel = future.get();
+            logger.info("[ 路由与" + channel.remoteAddress() + "] 创建了连接.");
+            loggerMsg.info("[ 路由与" + channel.remoteAddress() + "] 创建了连接.");
+            return channel;
         } catch (InterruptedException | ExecutionException e) {
             CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
+            return null;
         }
-        return channel;
     }
 
     public void releaseChannel(InetSocketAddress address, Channel channel) {

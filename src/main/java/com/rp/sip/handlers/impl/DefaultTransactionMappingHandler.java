@@ -216,7 +216,11 @@ public class DefaultTransactionMappingHandler implements TransactionMappingHandl
                     channelPipeline.addLast(new LengthFieldByteToMessageDecoder(Integer.parseInt((String) getRouteSetting().get("lengthFieldLength")),
                             Integer.parseInt((String) getRouteSetting().get("lengthFieldOffset")),
                             (String) getRouteSetting().get("charset")));
-                    channelPipeline.addLast(new ReceiveMsgHandler());
+                    channelPipeline.addLast(new ReceiveMsgHandler(packMessage,
+                            hasMessageInterceptor(getRouteTran()),
+                            hasRouteReceiveMessageHandler(getRouteTran()),
+                            Boolean.parseBoolean((String) getRouteSetting().get("isShortConnection")),
+                            Charset.forName((String) getRouteSetting().get("charset"))));
                 }, packMessage,
                 hasMessageInterceptor(getRouteTran()),
                 hasRouteReceiveMessageHandler(getRouteTran()),

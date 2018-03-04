@@ -1,9 +1,11 @@
 package com.rp.sip.route;
 
 
+import com.rp.sip.component.MessageObject;
 import com.rp.sip.utils.CommonUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -49,43 +51,30 @@ public class HostCallBack {
 
     private Channel channel = null;
 
-    private RouteReceiveMessageHandler handler;
-
-    private volatile ByteBuf responseByteBuf = null;
+    private volatile MessageObject response = null;
 
     private long timeout;
 
-    public HostCallBack(Channel channel, long timeout, RouteReceiveMessageHandler handler) {
+    public HostCallBack(Channel channel, long timeout) {
         this.channel = channel;
         this.timeout = timeout;
         this.isShortConnection = true;
-        this.handler = handler;
         HostCallBack.FUTURES.put(this.channel.id().asLongText(), this);
     }
 
-    HostCallBack(String associationId, long timeout, RouteReceiveMessageHandler handler) {
+    HostCallBack(String associationId, long timeout) {
         this.timeout = timeout;
         this.isShortConnection = false;
-        this.handler = handler;
         HostCallBack.FUTURES.put(associationId, this);
     }
 
-    public static void receive(String associationId, ByteBuf msg) {
+    public static void receive(String associationId, MessageObject msg) {
         HostCallBack future = HostCallBack.FUTURES.remove(associationId);
         if (future != null) {
             ReentrantLock lock = future.lock;
             try {
                 lock.lockInterruptibly();
-                RouteReceiveMessageHandler handler = getReceiveMessageHandler(future);
-                if (handler != null) {
-                    ByteBuf result = handler.unpackMessagePreprocess(msg);
-                    if (result == null) {
-                        return;
-                    }
-                    future.setResponseByteBuf(result);
-                } else {
-                    future.setResponseByteBuf(msg);
-                }
+                future.setResponseMessageObject(msg);
                 //  future.latch.countDown();
                 future.condition.signal();
             } catch (InterruptedException e) {
@@ -99,15 +88,15 @@ public class HostCallBack {
         }
     }
 
-    private void setResponseByteBuf(ByteBuf responseByteBuf) {
-        this.responseByteBuf = responseByteBuf;
+    private void setResponseMessageObject(MessageObject response) {
+        this.response = response;
     }
 
-    ByteBuf getResponseByteBuf() throws InterruptedException {
+    MessageObject getResponseMessageObject() throws InterruptedException {
         boolean interrupted = true;
         try {
             lock.lockInterruptibly();
-            while (responseByteBuf == null) {
+            while (response == null) {
                 // latch.await(this.timeout, TimeUnit.SECONDS);
                 if (!interrupted) {
                     Thread.currentThread().interrupt();
@@ -126,14 +115,11 @@ public class HostCallBack {
                 lock.unlock();
             }
         }
-        return responseByteBuf;
-    }
-
-    private static RouteReceiveMessageHandler getReceiveMessageHandler(HostCallBack future) {
-        return future.handler;
+        return response;
     }
 
     public interface RouteReceiveMessageHandler {
+        // 实现时 要手动释放 ByteBuf
         ByteBuf unpackMessagePreprocess(ByteBuf response);
     }
 }

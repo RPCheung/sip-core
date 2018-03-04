@@ -184,9 +184,10 @@ public class HttpRoute implements IRoute {
     }
 
     @Override
-    public void setAssociationId(String associationId) {
+    public void setAssociationIdXPath(String associationIdXPath) {
 
     }
+
 
     @Override
     public void addHttpRequestHeader(String key, String value) {

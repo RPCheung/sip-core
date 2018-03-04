@@ -12,9 +12,9 @@ public interface IRoute {
     /**
      * 4 tcp
      *
-     * @param associationId
+     * @param associationIdXPath
      */
-    void setAssociationId(String associationId);
+    void setAssociationIdXPath(String associationIdXPath);
 
     /**
      * 4 http

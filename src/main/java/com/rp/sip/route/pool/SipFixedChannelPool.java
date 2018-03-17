@@ -44,7 +44,7 @@ public class SipFixedChannelPool {
     private Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
     public void init() {
-        if (!(Boolean.valueOf((String) getSettings().get("isUserRoute")))) {
+        if (!(Boolean.valueOf((String) getRoutePoolSetting().get("isUserRoute")))) {
             return;
         }
         group = new NioEventLoopGroup(Integer.parseInt((String) getRoutePoolSetting().get("IONum")));
@@ -95,12 +95,6 @@ public class SipFixedChannelPool {
 
     public void releaseChannel(InetSocketAddress address, Channel channel) {
         SipFixedChannelPool.poolMap.get(address).release(channel);
-    }
-
-    private Map<String, Object> getSettings() {
-        SipSettingDAO settingDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipSettingDAO.class);
-        SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
-        return settingDAO.querySetting(info.getServerId());
     }
 
     private Map<String, Object> getRoutePoolSetting() {

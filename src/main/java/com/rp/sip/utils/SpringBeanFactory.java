@@ -1,7 +1,7 @@
 package com.rp.sip.utils;
 
 
-import com.rp.sip.classloader.SipUserClassloader;
+import com.rp.sip.classloader.SIPUserClassLoader;
 import com.rp.sip.db.mapper.CustomComponentDAO;
 import com.rp.sip.db.mapper.SipSettingDAO;
 import com.rp.sip.model.SIPInfo;
@@ -113,7 +113,7 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
     }
 
     private void initCustomComponent() {
-        initMessageInterceptor();
+        // initMessageInterceptor();
         initBusinessDispatcherHandler();
         initFindTxCodeHandler();
         initTransactionMappingHandler();
@@ -132,13 +132,14 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
     }
 
     private void loadAllUserJar() {
+        ClassLoaderUtils.utils.newSipUserClassloader("sipUserClassLoader");
         loadUserJar(SYSTEM_PATH);
         loadUserJar(JAR_PATH);
         loadUserBiz(DEPLOYABLE_PATH);
     }
 
     private void loadUserBiz(String DEPLOYABLE_PATH) {
-        SipUserClassloader classloader = SpringBeanFactory.applicationContext.getBean(SipUserClassloader.class);
+        SIPUserClassLoader classloader = SpringBeanFactory.applicationContext.getBean(SIPUserClassLoader.class);
         try {
             ClassLoaderUtils.utils.moveDeployableJarInDirs(DEPLOYABLE_PATH, SIPPath.BIZ_PATH);
         } catch (IOException e) {
@@ -197,7 +198,7 @@ public class SpringBeanFactory implements ApplicationContextAware, BeanFactoryAw
     }
 
     private void loadUserJar(String JAR_PATH) {
-        SipUserClassloader classloader = SpringBeanFactory.applicationContext.getBean(SipUserClassloader.class);
+        SIPUserClassLoader classloader = SpringBeanFactory.applicationContext.getBean(SIPUserClassLoader.class);
         List<File> files = new ArrayList<>(FileUtils.listFiles(
                 new File(JAR_PATH), new String[]{"jar"}, true));
         if (files.size() == 0) {

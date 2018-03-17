@@ -4,7 +4,7 @@ package com.rp.sip.utils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
-import com.rp.sip.classloader.SipUserClassloader;
+import com.rp.sip.classloader.SIPUserClassLoader;
 import com.rp.sip.component.MessageObject;
 import com.rp.sip.message.DefaultMessageObject;
 import com.thoughtworks.xstream.XStream;
@@ -52,7 +52,7 @@ public enum MsgUtils {
         if (message == null || message.length == 0) {
             return null;
         }
-        SipUserClassloader classloader = SpringBeanUtils.UTILS.getSpringBeanByType(SipUserClassloader.class);
+        SIPUserClassLoader classloader = SpringBeanUtils.UTILS.getSpringBeanByType(SIPUserClassLoader.class);
         try {
             return JSON.parseObject(message, classloader.loadClass(clzz));
         } catch (ClassNotFoundException e) {

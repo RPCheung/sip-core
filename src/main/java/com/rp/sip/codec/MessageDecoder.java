@@ -3,7 +3,10 @@ package com.rp.sip.codec;
 import com.rp.sip.component.IMessageInterceptor;
 import com.rp.sip.component.MessageObject;
 import com.rp.sip.component.MessageType;
+import com.rp.sip.db.mapper.SipTranDAO;
+import com.rp.sip.model.SIPInfo;
 import com.rp.sip.packer.PackMessage;
+import com.rp.sip.utils.ClassLoaderUtils;
 import com.rp.sip.utils.SpringBeanUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -43,7 +46,12 @@ public class MessageDecoder extends MessageToMessageDecoder<Map<String, ByteBuf>
         logger.info("server receive msg:" + msg.toString(Charset.forName(charset)));
         loggerMsg.info("server receive msg:" + msg.toString(Charset.forName(charset)));
         PackMessage packMessage;
-        IMessageInterceptor messageInterceptor = (IMessageInterceptor) SpringBeanUtils.UTILS.getSpringBeanById("messageInterceptor");
+        IMessageInterceptor messageInterceptor = null;
+
+        if (getTran(txCode).get("reqMessageInterceptor") != null) {
+            messageInterceptor = (IMessageInterceptor) ClassLoaderUtils
+                    .utils.createSipUserObject((String) getTran(txCode).get("reqMessageInterceptor"));
+        }
 
         if (SpringBeanUtils.UTILS.isContainsBean4Id("customMessagePacker")) {
             packMessage = (PackMessage) SpringBeanUtils.UTILS.getSpringBeanById("customMessagePacker");
@@ -77,5 +85,11 @@ public class MessageDecoder extends MessageToMessageDecoder<Map<String, ByteBuf>
         Map<String, MessageObject> finalTxEntry = new ConcurrentHashMap<>(1);
         finalTxEntry.put(txCode, messageObject);
         out.add(finalTxEntry);
+    }
+
+    private Map<String, Object> getTran(String txCode) {
+        SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
+        SipTranDAO sipTranDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipTranDAO.class);
+        return sipTranDAO.queryTranByTxCode(info.getServerId(), txCode);
     }
 }

@@ -1,32 +1,22 @@
 package com.rp.sip.classloader;
 
-
-
 import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+public class SIPUserClassLoader extends URLClassLoader {
 
-/**
- * Created by cheungrp on 18/2/2.
- */
-@Component("sipUserClassloader")
-public class SipUserClassloader extends URLClassLoader {
+	public SIPUserClassLoader(ClassLoader parent) {
+		this(new URL[] {}, parent);
+	}
 
-    public SipUserClassloader(){
-        this(new URL[]{});
-    }
+	public SIPUserClassLoader(URL[] urls, ClassLoader parent) {
+		super(urls, parent);
+	}
 
-
-    public SipUserClassloader(URL[] urls) {
-        super(urls);
-    }
-
-
-    public void addURL(String jarPath) throws MalformedURLException {
-        super.addURL(new URL("file:"+jarPath));
-    }
-
+	public void addURL(String jarPath) throws MalformedURLException {
+		super.addURL(new URL("file:" + jarPath));
+	}
 
 }

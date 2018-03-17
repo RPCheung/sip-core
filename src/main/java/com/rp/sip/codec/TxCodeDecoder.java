@@ -1,6 +1,5 @@
 package com.rp.sip.codec;
 
-import com.rp.sip.classloader.SipUserClassloader;
 import com.rp.sip.component.MessageType;
 import com.rp.sip.db.mapper.SipSettingDAO;
 import com.rp.sip.db.mapper.SipTranDAO;

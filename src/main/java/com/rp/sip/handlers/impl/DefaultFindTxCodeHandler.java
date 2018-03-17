@@ -5,6 +5,7 @@ import com.rp.sip.component.MessageType;
 import com.rp.sip.db.mapper.SipSettingDAO;
 import com.rp.sip.handlers.FindTxCodeHandler;
 import com.rp.sip.model.SIPInfo;
+import com.rp.sip.utils.ClassLoaderUtils;
 import com.rp.sip.utils.CommonUtils;
 import com.rp.sip.utils.MsgUtils;
 import com.rp.sip.utils.SpringBeanUtils;
@@ -36,9 +37,10 @@ public class DefaultFindTxCodeHandler implements FindTxCodeHandler {
 
 
     @Override
-    public String findTxCodeFromReqMsg(ByteBuf request, MessageType messageType, Map<String, Object> setting) {
+    public String findTxCodeFromReqMsg(ByteBuf request, MessageType messageType, Map<String, Object> setting) throws Exception {
 
-        IMessageInterceptor messageInterceptor = (IMessageInterceptor) SpringBeanUtils.UTILS.getSpringBeanById("messageInterceptor");
+        IMessageInterceptor messageInterceptor = (IMessageInterceptor) ClassLoaderUtils.utils
+                .createSipUserObject((String) getSettings().get("messageInterceptor"));
 
         switch (messageType) {
             case XML: {
@@ -83,6 +85,7 @@ public class DefaultFindTxCodeHandler implements FindTxCodeHandler {
             }
         }
     }
+
 
     private Map<String, Object> getSettings() {
         SipSettingDAO settingDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipSettingDAO.class);

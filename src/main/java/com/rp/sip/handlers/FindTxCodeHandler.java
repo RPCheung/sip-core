@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public interface FindTxCodeHandler {
 
-    String findTxCodeFromReqMsg(ByteBuf request,MessageType messageType,Map<String, Object> setting);
+    String findTxCodeFromReqMsg(ByteBuf request,MessageType messageType,Map<String, Object> setting) throws Exception;
 
     void setTxCodePath(String txCodePath);
 

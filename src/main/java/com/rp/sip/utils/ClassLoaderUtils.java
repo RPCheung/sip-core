@@ -1,12 +1,17 @@
 package com.rp.sip.utils;
 
-import com.rp.sip.classloader.SipUserClassloader;
+import com.rp.sip.classloader.SIPUserClassLoader;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.Instrumentation;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +27,29 @@ public enum ClassLoaderUtils {
     private Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
 
+    public SIPUserClassLoader newSipUserClassloader(String classLoaderId) {
+        BeanDefinitionBuilder builder = SpringBeanUtils.UTILS.addSpringBeanDefinition(SIPUserClassLoader.class);
+        builder.addConstructorArgReference("commonClassLoader");
+        SpringBeanUtils.UTILS.registerSpringBeanDefinition(builder, classLoaderId);
+        return (SIPUserClassLoader) SpringBeanUtils.UTILS.getSpringBeanById(classLoaderId);
+    }
+
     public Object createSipUserObject(String clazz) throws ClassNotFoundException {
-        SipUserClassloader classloader = SpringBeanUtils.UTILS.getSpringBeanByType(SipUserClassloader.class);
+        try {
+            Class clz = SpringBeanUtils.UTILS.getSpringBeanById("sipUserClassLoader", SIPUserClassLoader.class).loadClass(clazz);
+            return clz.newInstance();
+        } catch (InstantiationException e) {
+            CommonUtils.getCommonUtils().printExceptionFormat(logger, e);
+            CommonUtils.getCommonUtils().printExceptionFormat(loggerMsg, e);
+            return null;
+        } catch (IllegalAccessException e) {
+            logger.error("必须提供一个无参的构造器!!!!");
+            loggerMsg.error("必须提供一个无参的构造器!!!!");
+            return null;
+        }
+    }
+
+    public Object createSipUserObject(SIPUserClassLoader classloader, String clazz) throws ClassNotFoundException {
         Class clz = classloader.loadClass(clazz);
         try {
             return clz.newInstance();
@@ -39,13 +65,21 @@ public enum ClassLoaderUtils {
     }
 
     public Class createSipUserClass(String clazz) throws ClassNotFoundException {
-        SipUserClassloader classloader = SpringBeanUtils.UTILS.getSpringBeanByType(SipUserClassloader.class);
+        Class clz = SpringBeanUtils.UTILS.getSpringBeanById("sipUserClassLoader", SIPUserClassLoader.class).loadClass(clazz);
+        return clz;
+    }
+
+    public Class createSipUserClass(SIPUserClassLoader classloader, String clazz) throws ClassNotFoundException {
         Class clz = classloader.loadClass(clazz);
         return clz;
     }
 
-    public SipUserClassloader getSipUserClassloader() {
-        return SpringBeanUtils.UTILS.getSpringBeanByType(SipUserClassloader.class);
+    public SIPUserClassLoader getSipUserClassloader(String classLoaderId) {
+        return SpringBeanUtils.UTILS.getSpringBeanById(classLoaderId, SIPUserClassLoader.class);
+    }
+
+    public SIPUserClassLoader getSipUserClassloader() {
+        return SpringBeanUtils.UTILS.getSpringBeanById("sipUserClassLoader", SIPUserClassLoader.class);
     }
 
     public List<File> findJarInDirs(String dirPath) {

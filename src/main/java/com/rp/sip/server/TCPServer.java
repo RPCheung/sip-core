@@ -12,8 +12,10 @@ import com.rp.sip.utils.SpringBeanUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.oio.OioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.oio.OioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
@@ -50,13 +52,22 @@ public class TCPServer {
     private Map<String, Object> setting;
 
     public void startup() {
-        initDB();
+        initParam();
         this.executorGroup = new DefaultEventExecutorGroup((Integer) setting.get("connectNum"));
         ServerBootstrap bootstrap = new ServerBootstrap();
-        primary = new NioEventLoopGroup((Integer) setting.get("connectNum"));// 通过nio方式来接收连接和处理连接
-        secondary = new NioEventLoopGroup((Integer) setting.get("IONum"));
-        bootstrap.group(primary, secondary);
-        bootstrap.channel(NioServerSocketChannel.class);// 设置nio类型的channel
+
+        if (Boolean.valueOf((String) setting.get("isFullDuplex"))) {
+            primary = new NioEventLoopGroup((Integer) setting.get("connectNum"));// 通过nio方式来接收连接和处理连接
+            secondary = new NioEventLoopGroup((Integer) setting.get("IONum"));
+            bootstrap.group(primary, secondary);
+            bootstrap.channel(NioServerSocketChannel.class);// 设置nio类型的channel
+        } else {
+            primary = new OioEventLoopGroup((Integer) setting.get("connectNum"));// 通过nio方式来接收连接和处理连接
+            secondary = new OioEventLoopGroup((Integer) setting.get("IONum"));
+            bootstrap.group(primary, secondary);
+            bootstrap.channel(OioServerSocketChannel.class);// 设置nio类型的channel
+        }
+
         bootstrap.localAddress(new InetSocketAddress((String) setting.get("host"), (Integer) setting.get("port")));// 设置监听端口
         bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
         bootstrap.option(ChannelOption.SO_TIMEOUT, 30000);
@@ -77,7 +88,7 @@ public class TCPServer {
                 // business operate
                 ch.pipeline().addLast("transactionMapper", new TransactionMapper());
                 ch.pipeline().addLast("businessDispatcher", new BusinessDispatcher((String) setting.get("charset")));
-                ch.pipeline().addLast(executorGroup,"idleStateHandler", new IdleStateHandler(10, 10, 0));
+                ch.pipeline().addLast(executorGroup, "idleStateHandler", new IdleStateHandler(10, 10, 0));
                 ch.pipeline().addLast(executorGroup, "businessController", new BusinessController());
                 // encoder
                 ch.pipeline().addLast("lengthFieldPrepender", new LengthFieldPrepender((Integer) setting.get("lengthFieldLength"), lengthIncludesLengthFieldLength, (String) setting.get("charset")));
@@ -108,7 +119,7 @@ public class TCPServer {
         }
     }
 
-    private void initDB() {
+    private void initParam() {
         SipSettingDAO settingDAO = SpringBeanUtils.UTILS.getSpringBeanByType(SipSettingDAO.class);
         SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
         this.setting = settingDAO.querySetting(info.getServerId());

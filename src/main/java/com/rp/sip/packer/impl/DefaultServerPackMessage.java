@@ -1,5 +1,7 @@
 package com.rp.sip.packer.impl;
 
+import com.rp.sip.annotation.ServerReqMessage;
+import com.rp.sip.annotation.ServerResMessage;
 import com.rp.sip.component.MessageObject;
 import com.rp.sip.component.MessageType;
 import com.rp.sip.db.mapper.SipSettingDAO;
@@ -22,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
+import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
@@ -42,7 +45,6 @@ public class DefaultServerPackMessage implements PackMessage {
         MessageType messageType = MessageType.valueOf((String) getSettings().get("msgType"));
         SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
         String msgClassName = (String) getTran(info.getServerId(), txCode).get("req_msg_class");
-        String rootElementName = (String) getTran(info.getServerId(), txCode).get("xmlRootName");
 
         switch (messageType) {
             case XML: {
@@ -52,7 +54,10 @@ public class DefaultServerPackMessage implements PackMessage {
                         new DomDriver(charset, new XmlFriendlyNameCoder("__", "_")),
                         new ClassLoaderReference(ClassLoaderUtils.utils.getSipUserClassloader()));
                 stream.setMode(XStream.NO_REFERENCES);
-                stream.alias(rootElementName, ClassLoaderUtils.utils.createSipUserClass(msgClassName));
+                Class clz = ClassLoaderUtils.utils.createSipUserClass(msgClassName);
+                ServerReqMessage annotation = (ServerReqMessage) clz.getAnnotation(ServerReqMessage.class);
+
+                stream.alias(annotation.xmlRootName(), clz);
                 messageObject = new DefaultMessageObject(JXPathContext.newContext(stream.fromXML(xml)));
                 break;
             }
@@ -87,7 +92,6 @@ public class DefaultServerPackMessage implements PackMessage {
         String charset = (String) getSettings().get("charset");
         MessageType messageType = MessageType.valueOf((String) getSettings().get("msgType"));
         SIPInfo info = (SIPInfo) SpringBeanUtils.UTILS.getSpringBeanById("sip-info");
-        String rootElementName = (String) getTran(info.getServerId(), txCode).get("xmlRootName");
         String msgClassName = (String) getTran(info.getServerId(), txCode).get("res_msg_class");
 
         switch (messageType) {
@@ -97,7 +101,9 @@ public class DefaultServerPackMessage implements PackMessage {
                         new DomDriver(charset, new XmlFriendlyNameCoder("__", "_")),
                         new ClassLoaderReference(ClassLoaderUtils.utils.getSipUserClassloader()));
                 stream.setMode(XStream.NO_REFERENCES);
-                stream.alias(rootElementName, ClassLoaderUtils.utils.createSipUserClass(msgClassName));
+                Class clz = ClassLoaderUtils.utils.createSipUserClass(msgClassName);
+                ServerResMessage annotation = (ServerResMessage) clz.getAnnotation(ServerResMessage.class);
+                stream.alias(annotation.xmlRootName(), clz);
                 String xml = stream.toXML(messageObject.getSipMessagePojo());
                 return Unpooled.copiedBuffer(xml.getBytes());
             }

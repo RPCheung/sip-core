@@ -56,10 +56,10 @@ public class BusinessController extends ChannelInboundHandlerAdapter {
             channelFuture.addListener((ChannelFutureListener) future -> {
                 boolean isDone = future.isDone();
                 boolean isSuccess = future.isSuccess();
-                logger.info("响应是否完成: " + isDone);
-                loggerMsg.info("响应是否完成: " + isDone);
-                logger.info("响应是否成功: " + isSuccess);
-                loggerMsg.info("响应是否成功: " + isSuccess);
+                logger.info("交易是否完成: " + isDone);
+                loggerMsg.info("交易是否完成: " + isDone);
+                logger.info("交易是否成功: " + isSuccess);
+                loggerMsg.info("交易是否成功: " + isSuccess);
             });
         } catch (Exception e) {
             if (session != null) {

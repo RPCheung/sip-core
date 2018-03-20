@@ -10,6 +10,9 @@ import java.lang.annotation.*;
 @Documented
 @SipMessage
 @Inherited
-public @interface ServsrResMessage {
-    String value() default "";
+public @interface ServerResMessage {
+
+    String txCode() default "";
+
+    String xmlRootName() default "";
 }

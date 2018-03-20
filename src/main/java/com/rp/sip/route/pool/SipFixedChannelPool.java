@@ -10,11 +10,13 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.oio.OioEventLoopGroup;
 import io.netty.channel.pool.AbstractChannelPoolMap;
 import io.netty.channel.pool.ChannelPoolHandler;
 import io.netty.channel.pool.ChannelPoolMap;
 import io.netty.channel.pool.FixedChannelPool;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.channel.socket.oio.OioSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -47,9 +49,17 @@ public class SipFixedChannelPool {
         if (!(Boolean.valueOf((String) getRoutePoolSetting().get("isUserRoute")))) {
             return;
         }
-        group = new NioEventLoopGroup(Integer.parseInt((String) getRoutePoolSetting().get("IONum")));
-        bootstrap.group(group)
-                .channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true)
+        // 设置 半双工 或 全双工
+        if (Boolean.valueOf((String) getRoutePoolSetting().get("isFullDuplex"))) {
+            group = new NioEventLoopGroup(Integer.parseInt((String) getRoutePoolSetting().get("IONum")));
+            bootstrap.group(group)
+                    .channel(NioSocketChannel.class);
+        } else {
+            group = new OioEventLoopGroup(Integer.parseInt((String) getRoutePoolSetting().get("IONum")));
+            bootstrap.group(group)
+                    .channel(OioSocketChannel.class);
+        }
+        bootstrap.option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000)
                 .option(ChannelOption.SO_KEEPALIVE, true);
         SipFixedChannelPool.poolMap = new AbstractChannelPoolMap<InetSocketAddress, FixedChannelPool>() {

@@ -56,6 +56,7 @@ public class TCPServer {
         this.executorGroup = new DefaultEventExecutorGroup((Integer) setting.get("connectNum"));
         ServerBootstrap bootstrap = new ServerBootstrap();
 
+        // 设置 半双工 或 全双工
         if (Boolean.valueOf((String) setting.get("isFullDuplex"))) {
             primary = new NioEventLoopGroup((Integer) setting.get("connectNum"));// 通过nio方式来接收连接和处理连接
             secondary = new NioEventLoopGroup((Integer) setting.get("IONum"));
